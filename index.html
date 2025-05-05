@@ -3742,80 +3742,69 @@ document.addEventListener('DOMContentLoaded', initRubrosToggle);
 <!-- End Toggle Rubros -->
 
 
-<!-- Expensa Real Auto‑Fill v3 -->
+
+
+
+<!-- Expensa Real Auto‑Fill v4 -->
 <script>
 (function(){
-  const MONTHS_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const FULL = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const ABBR = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
-  function getExpensasOrdinarias(){
+  function findMonthIndex(key){
+     key = key.toLowerCase().trim();
+     if(key.match(/^m\d+$/)) return parseInt(key.slice(1))-1;
+     let idx = FULL.indexOf(key);
+     if(idx>-1) return idx;
+     idx = ABBR.indexOf(key.slice(0,3));
+     return idx;
+  }
+
+  function getExpensasRow(){
      if(!window.appState || !appState.ingresos) return null;
      return appState.ingresos.find(r=>{
-        const rub = (r.rubro||'').toString().toLowerCase().trim();
-        const det = (r.detalle||'').toString().toLowerCase().trim();
-        return rub==='expensas' && det==='expensas ordinarias';
+       const rub=(r.rubro||'').toString().toLowerCase().trim();
+       const det=(r.detalle||'').toString().toLowerCase().trim();
+       return rub==='expensas' && det==='expensas ordinarias';
      });
   }
 
-  function extractMonthlyValues(row){
-     const vals = new Array(12).fill(0);
-     if(!row) return vals;
-     // iterate over keys
+  function getMonthlyArray(row){
+     const arr = new Array(12).fill(0);
+     if(!row) return arr;
      Object.entries(row).forEach(([k,v])=>{
-        const key = k.toString().toLowerCase().trim();
-        let idx = -1;
-        if(key.match(/^m\d+$/)){
-           idx = parseInt(key.slice(1))-1;
-        }else{
-           idx = MONTHS_ES.indexOf(key);
-        }
-        if(idx>=0 && idx<12){
-           vals[idx] = Number(v)||0;
-        }
+        const idx = findMonthIndex(k);
+        if(idx>=0 && idx<12) arr[idx]=Number(v)||0;
      });
-     return vals;
+     return arr;
   }
 
-  function fillColumn(){
-     const table = document.querySelector('#dashboard-summary');
+  function writeToTable(){
+     const table=document.querySelector('#dashboard-summary');
      if(!table) return false;
-     const colIdx = Array.from(table.querySelectorAll('thead th'))
-        .findIndex(th=>th.textContent.toLowerCase().includes('expensa real'));
+     const colIdx=[...table.querySelectorAll('thead th')].findIndex(th=>th.textContent.toLowerCase().includes('expensa real'));
      if(colIdx===-1) return false;
-     const rows = table.querySelectorAll('tbody tr');
-     if(rows.length<12) return false;   // aún no renderizado
-     const expRow = getExpensasOrdinarias();
-     if(!expRow) return true; // nada que poner
-     const data = extractMonthlyValues(expRow);
-     const fmt = new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:2});
-     data.forEach((val,i)=>{
-        if(i<rows.length){
-           rows[i].children[colIdx].textContent = fmt.format(val);
-        }
-     });
+     const rows=table.querySelectorAll('tbody tr');
+     if(rows.length<12) return false;
+     const data=getMonthlyArray(getExpensasRow());
+     const fmt=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:2});
+     data.forEach((val,i)=>{ if(i<rows.length){ rows[i].children[colIdx].textContent=fmt.format(val);} });
      return true;
   }
 
-  function tryFill(attempt=0){
-     if(fillColumn()) return;
-     if(attempt<15) setTimeout(()=>tryFill(attempt+1), 200);
+  function waitAndWrite(attempt=0){
+     if(writeToTable()) return;
+     if(attempt<20) setTimeout(()=>waitAndWrite(attempt+1),200);
   }
 
-  // Hook después de subir archivo
-  if(typeof handleFileUpload==='function'){
-     const orig = handleFileUpload;
-     window.handleFileUpload = function(files){
-        orig(files);
-        tryFill();
+  const patch = fn=>{
+     return function(...args){
+        fn.apply(this,args);
+        waitAndWrite();
      };
-  }
-  // Hook cambio de escenario
-  if(typeof cargarEscenario==='function'){
-     const orig2 = cargarEscenario;
-     window.cargarEscenario = function(k){
-        orig2(k);
-        tryFill();
-     };
-  }
+  };
+  if(window.handleFileUpload) window.handleFileUpload = patch(window.handleFileUpload);
+  if(window.cargarEscenario)  window.cargarEscenario  = patch(window.cargarEscenario);
 })();
 </script>
 
