@@ -1153,14 +1153,18 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              }
 
 
-             // 5. Cuota IPC (Cuota s/Gs * (1 + IPC%)) - Use IPC snapshot stored in calculated.ipcManual
-             for (let i = 0; i < 12; i++) {
-                 const cuotaBase = calculated.cuotaSobreGastosMes[i] || 0;
-                 const ipc = parseFloat(calculated.ipcManual?.[i] || 0); // Use stored IPC
-                 calculated.cuotaIpcMes[i] = cuotaBase * (1 + ipc / 100);
-             }
+             // 5. Cuota IPC usando Expensa Real (Enero) como base y acumulando IPC mes a mes
+             {
+                 const baseEnero = (calculated.cuotaRealBaseMes?.[0] || 0);
+                 const ipcEnero  = parseFloat(calculated.ipcManual?.[0] || 0);
+                 calculated.cuotaIpcMes[0] = baseEnero * (1 + ipcEnero / 100);
 
-             // 6. Calculate Annual Totals for new/modified columns
+                 for (let i = 1; i < 12; i++) {
+                     const ipc = parseFloat(calculated.ipcManual?.[i] || 0);
+                     calculated.cuotaIpcMes[i] = calculated.cuotaIpcMes[i - 1] * (1 + ipc / 100);
+                 }
+             }
+// 6. Calculate Annual Totals for new/modified columns
              calculated.annualTotals.cuotaSobreGastos = calculated.cuotaSobreGastosMes.reduce((a, b) => a + b, 0);
              calculated.annualTotals.cuotaIpc = calculated.cuotaIpcMes.reduce((a, b) => a + b, 0); // Sum calculated IPC cuotas
              calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a, b) => a + b, 0); // Sum base real expensas
