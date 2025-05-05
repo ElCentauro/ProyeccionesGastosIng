@@ -1101,13 +1101,12 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      // Store BASE values in 'ingresoAjustado' for the detail table display
                      calculated.ingresoAjustado[rubro][detail] = baseValues.map(v => parseFloat(v || 0));
 
-                     // --- Store Base for Expensa Real ---
-// Capturar valores base de Expensas Ordinarias solo por detalle
-if ((detail || '').toString().toLowerCase().trim() === 'expensas ordinarias') {
-    for (let i = 0; i < 12; i++) {
-        calculated.cuotaRealBaseMes[i] = parseFloat(baseValues[i] || 0);
-    }
-}
+                     // --- Store Base for Expensa Real --- MODIFICADO
+                     // If this is the primary cuota rubro AND the first detail, store its base values
+                     if (detail === CUOTA_RUBRO_NAME) {
+                         for (let i = 0; i < 12; i++){
+                            calculated.cuotaRealBaseMes[i] = parseFloat(baseValues[i] || 0);
+                         }
                      }
                      // --- End Store Base ---
 
