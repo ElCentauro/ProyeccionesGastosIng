@@ -3735,3 +3735,39 @@ if (window.Chart && !Chart.registry.plugins.get('legendTweaks_v2')) {
   Chart.register(legendTweaks_v2);
 }
 </script>
+
+<!-- Plugin: legendTweaks_v3 -->
+<script>
+const legendTweaks_v3 = {
+  id: 'legendTweaks_v3',
+  beforeInit(chart) {
+    chart.options.plugins ||= {};
+    chart.options.plugins.legend ||= {};
+    chart.options.plugins.legend.labels ||= {};
+    chart.options.plugins.legend.labels.strikethrough = false;
+
+    // Reducir fuente 10 % y añadir % en etiqueta
+    const baseSize = (Chart.defaults.font && Chart.defaults.font.size) ? Chart.defaults.font.size : 12;
+    chart.options.plugins.legend.labels.generateLabels = function(c) {
+      // Base labels
+      const meta = c.getDatasetMeta(0);
+      const total = c.data.datasets[0].data.reduce((a,b)=>a+b,0) || 1;
+      return c.data.labels.map((label, i) => {
+        const value = c.data.datasets[0].data[i];
+        const percentage = ((value/total)*100).toFixed(1) + '%';
+        const model = meta.data[i] && meta.data[i].tooltipPosition ? meta.data[i] : {};
+        return {
+          text: label + ' (' + percentage + ')',
+          fillStyle: c.data.datasets[0].backgroundColor[i],
+          hidden: isNaN(value) || meta.data[i].hidden,
+          index: i,
+          font: {size: Math.round(baseSize*0.9)}
+        };
+      }).sort((a,b)=> c.data.datasets[0].data[b.index] - c.data.datasets[0].data[a.index]);
+    };
+  }
+};
+if (window.Chart && !Chart.registry.plugins.get('legendTweaks_v3')) {
+  Chart.register(legendTweaks_v3);
+}
+</script>
