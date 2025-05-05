@@ -3686,3 +3686,20 @@ generateLabels: chart => {
     </script>
 </body>
 </html>
+
+<script>
+/* ==== Simple tab switching ==== */
+function openTab(evt, tabName) {
+    const tablinks = document.querySelectorAll('.tab-link');
+    const tabcontents = document.querySelectorAll('.tab-content');
+    tablinks.forEach(btn => btn.classList.remove('active'));
+    tabcontents.forEach(tab => tab.style.display = 'none');
+    const target = document.getElementById(tabName);
+    if (target) target.style.display = 'block';
+    if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+}
+// Show default tab on load
+document.addEventListener('DOMContentLoaded', () => {
+    openTab(null, 'dashboard');
+});
+</script>
