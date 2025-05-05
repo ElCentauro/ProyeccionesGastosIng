@@ -573,9 +573,9 @@
                 </ul>
             </p>
             <div id="file-upload-area" onclick="document.getElementById('excel-file-input').click()">
-                 <p><i class="fas fa-file-excel"></i><br>Arrastra tu archivo Excel aquí (.xlsx, .xls) o haz clic para seleccionar</p>
-                 <input type="file" id="excel-file-input" accept=".xlsx, .xls" style="display: none;" onchange="handleFileUpload(this.files)">
-                 <button type="button" class="button-primary" onclick="event.stopPropagation(); document.getElementById('excel-file-input').click()" style="pointer-events: auto;"><i class="fas fa-folder-open"></i> Seleccionar Archivo</button>
+                  <p><i class="fas fa-file-excel"></i><br>Arrastra tu archivo Excel aquí (.xlsx, .xls) o haz clic para seleccionar</p>
+                  <input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload(this.files)">
+                  <button type="button" class="button-primary"><i class="fas fa-folder-open"></i> Seleccionar Archivo</button>
                  <button type="button" onclick="event.stopPropagation(); loadSampleData()" style="margin-left: 10px; pointer-events: auto;" class="button-secondary"><i class="fas fa-database"></i> Cargar Datos Ejemplo</button>
             </div>
             <div id="file-upload-feedback"></div>
@@ -1817,30 +1817,10 @@
                             font: { // Apply font settings here
                                  size: legendFontSize, // Apply increased size
                             },
-                             
-generateLabels: chart => {
-    const data = chart.data;
-    if (!data.labels.length || !data.datasets.length) return [];
-    const { labels } = data;
-    const dataset = data.datasets[0];
-    const total = dataset.data.reduce((a, b) => a + b, 0);
-
-    const items = [];
-    labels.forEach((label, i) => {
-        const value = dataset.data[i];
-        if (value === 0) return; // Omit items with zero value entirely
-        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0.0%';
-        items.push({
-            text: `${label} (${percentage})`,
-            fillStyle: dataset.backgroundColor[i],
-            strokeStyle: dataset.borderColor ? dataset.borderColor[i] : dataset.backgroundColor[i],
-            lineWidth: dataset.borderWidth || 0,
-            hidden: chart.getDataVisibility(i) // preserve toggle visibility
-        });
-    });
-    return items;
-}
- = data; const dataset = data.datasets[0];
+                             generateLabels: chart => {
+                                const data = chart.data;
+                                if (!data.labels.length || !data.datasets.length) return [];
+                                const { labels } = data; const dataset = data.datasets[0];
                                 const total = dataset.data.reduce((a, b) => a + b, 0);
                                 return labels.map((label, i) => {
                                     const value = dataset.data[i];
@@ -3686,20 +3666,3 @@ generateLabels: chart => {
     </script>
 </body>
 </html>
-
-<script>
-/* ==== Simple tab switching ==== */
-function openTab(evt, tabName) {
-    const tablinks = document.querySelectorAll('.tab-link');
-    const tabcontents = document.querySelectorAll('.tab-content');
-    tablinks.forEach(btn => btn.classList.remove('active'));
-    tabcontents.forEach(tab => tab.style.display = 'none');
-    const target = document.getElementById(tabName);
-    if (target) target.style.display = 'block';
-    if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
-}
-// Show default tab on load
-document.addEventListener('DOMContentLoaded', () => {
-    openTab(null, 'dashboard');
-});
-</script>
