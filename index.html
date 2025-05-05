@@ -10,6 +10,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Librería Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// --- 3D Donut shading plugin ---
+const donut3DPlugin = {
+    id: 'donut3DPlugin',
+    afterDatasetDraw(chart, args, pluginOptions) {
+        const {ctx, chartArea: {width, height}} = chart;
+        const meta = chart.getDatasetMeta(args.index);
+        meta.data.forEach(arc => {
+            const model = arc.getProps(['x','y','innerRadius','outerRadius','startAngle','endAngle'], true);
+            const midAngle = (model.startAngle + model.endAngle) / 2;
+            const gradient = ctx.createRadialGradient(model.x, model.y, model.innerRadius, model.x, model.y, model.outerRadius);
+            gradient.addColorStop(0, 'rgba(255,255,255,0.6)');
+            gradient.addColorStop(0.55, arc.options.backgroundColor);
+            gradient.addColorStop(1, 'rgba(0,0,0,0.3)');
+            ctx.save();
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(model.x, model.y, model.outerRadius, model.startAngle, model.endAngle);
+            ctx.arc(model.x, model.y, model.innerRadius, model.endAngle, model.startAngle, true);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        });
+    }
+};
+// Register plugin globally
+if (typeof Chart !== 'undefined' && !Chart.registry.plugins.get('donut3DPlugin')) {
+    Chart.register(donut3DPlugin);
+}
+</script>
+
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts (Inter) -->
@@ -1836,7 +1868,7 @@
                                         strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
                                         lineWidth: dataset.borderWidth || 0,
                                         // Note: Chart.js automatically handles hiding legend entries for hidden data
-                                        hidden: chart.getDataVisibility(i) || value === 0, // Hide if data is zero as well
+                                        hidden: value === 0, // Hide if data is zero as well
                                         index: i
                                     };
                                 });
