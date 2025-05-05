@@ -1817,27 +1817,46 @@
                             font: { // Apply font settings here
                                  size: legendFontSize, // Apply increased size
                             },
-                             generateLabels: chart => {
+                             
+generateLabels: chart => {
     const data = chart.data;
     if (!data.labels.length || !data.datasets.length) return [];
-    const labels = data.labels;
+    const { labels } = data;
     const dataset = data.datasets[0];
     const total = dataset.data.reduce((a, b) => a + b, 0);
-    return labels.map((label, i) => {
+
+    const items = [];
+    labels.forEach((label, i) => {
         const value = dataset.data[i];
-        if (value === 0) return null; // Omit entradas con valor cero
+        if (value === 0) return; // Omit items with zero value entirely
         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0.0%';
-        const textLabel = `${label} (${percentage})`;
-        return {
-            text: textLabel,
+        items.push({
+            text: `${label} (${percentage})`,
             fillStyle: dataset.backgroundColor[i],
-            strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
+            strokeStyle: dataset.borderColor ? dataset.borderColor[i] : dataset.backgroundColor[i],
             lineWidth: dataset.borderWidth || 0,
-            hidden: chart.getDataVisibility(i),
-            index: i
-        };
-    }).filter(Boolean);
-};
+            hidden: chart.getDataVisibility(i) // preserve toggle visibility
+        });
+    });
+    return items;
+}
+ = data; const dataset = data.datasets[0];
+                                const total = dataset.data.reduce((a, b) => a + b, 0);
+                                return labels.map((label, i) => {
+                                    const value = dataset.data[i];
+                                     // --- MODIFICADO: Generate label text without dashed description ---
+                                     const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0.0%';
+                                     const textLabel = `${label} (${percentage})`; // Format: "Label (Percentage)"
+
+                                    return {
+                                        text: textLabel, // Use the custom text label
+                                        fillStyle: dataset.backgroundColor[i],
+                                        strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
+                                        lineWidth: dataset.borderWidth || 0,
+                                        // Note: Chart.js automatically handles hiding legend entries for hidden data
+                                        hidden: chart.getDataVisibility(i) || value === 0, // Hide if data is zero as well
+                                        index: i
+                                    };
                                 });
                              }
                          }
