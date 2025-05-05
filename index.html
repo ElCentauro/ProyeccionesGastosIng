@@ -1101,14 +1101,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      // Store BASE values in 'ingresoAjustado' for the detail table display
                      calculated.ingresoAjustado[rubro][detail] = baseValues.map(v => parseFloat(v || 0));
 
-                     // --- Store Base for Expensa Real --- MODIFICADO
-                     // If this is the primary cuota rubro AND the first detail, store its base values
-                     if (detail === CUOTA_RUBRO_NAME) {
-                         for (let i = 0; i < 12; i++){
-                            calculated.cuotaRealBaseMes[i] = parseFloat(baseValues[i] || 0);
-                         }
-                     }
-                     // --- End Store Base ---
+                     // (Bloque reemplazado por lógica de rubro)
+
 
                      // Calculate the contribution of this detail's BASE value to the monthly rubro total (before UF mult)
                      for (let i = 0; i < 12; i++) {
@@ -1117,6 +1111,15 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  });
 
                  // After summing all details for the rubro, apply multiplication if it's a special rubro
+                // ---- NUEVO: Capturar valor base para Expensa Real ----
+                if (rubro === CUOTA_RUBRO_NAME) {
+                    for (let i = 0; i < 12; i++) {
+                        calculated.cuotaRealBaseMes[i] = calculated.totalIngresoRubroMes[rubro][i];
+                    }
+                    calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a,b)=>a+b,0);
+                }
+                // ---- FIN NUEVO ----
+
                  if (SPECIAL_INGRESO_RUBROS.includes(rubro)) {
                      for (let i = 0; i < 12; i++) {
                          calculated.totalIngresoRubroMes[rubro][i] *= unidades;
@@ -1591,17 +1594,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
                      // Monthly value cells for the detail
                      const detailValues = calculatedSet[rubro][detail]; // Use pre-validated calculated values
-                     const detailStatuses = monthStatus[type]?.[rubro]?.[detail] || Array(12).fill('Estimado'); // Get status for coloring
+                     const detailStatuses = monthStatus[type]?.[rubro]?.[detail] || Array(12).fill(type === 'ingresos' ? 'REAL' : 'Estimado'); // Get status for coloring
                      let annualDetailTotal = 0;
 
                      detailValues.forEach((val, index) => {
                          const cell = detailRow.insertCell();
                          cell.textContent = formatCurrency(val);
                          cell.classList.add('number-cell');
-                         // Apply specific background based on status ONLY for GASTOS details
-                         if (type === 'gastos') {
-                             cell.classList.add(detailStatuses[index] === 'REAL' ? 'real-month-cell' : 'estimated-month-cell');
-                         }
+                         cell.classList.add(detailStatuses[index] === 'REAL' ? 'real-month-cell' : 'estimated-month-cell');
                          annualDetailTotal += val;
                      });
 
