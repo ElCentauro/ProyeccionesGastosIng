@@ -764,7 +764,16 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             addEventListeners(); // Añadir listeners globales
             updateUI(); // Renderizar todo con el estado actual/cargado
             console.log(`App ${STORAGE_KEY} Inicializada.`);
-        });
+        }
+                // ---- NUEVO: Capturar valor base para Expensa Real (después de multiplicación) ----
+                if (rubro && rubro.toString().toLowerCase().trim() === CUOTA_RUBRO_NAME.toLowerCase()) {
+                    for (let i = 0; i < 12; i++) {
+                        calculated.cuotaRealBaseMes[i] = calculated.totalIngresoRubroMes[rubro][i];
+                    }
+                    calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a,b)=>a+b,0);
+                }
+                // ---- FIN NUEVO ----
+);
 
         // --- Validación y Selección de Escenario Activo ---
         function validateAndSetActiveScenario() {
@@ -1111,14 +1120,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  });
 
                  // After summing all details for the rubro, apply multiplication if it's a special rubro
-                // ---- NUEVO: Capturar valor base para Expensa Real ----
-                if (rubro && rubro.toString().toLowerCase().trim() === CUOTA_RUBRO_NAME.toLowerCase()) {
-                    for (let i = 0; i < 12; i++) {
-                        calculated.cuotaRealBaseMes[i] = calculated.totalIngresoRubroMes[rubro][i];
-                    }
-                    calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a,b)=>a+b,0);
-                }
-                // ---- FIN NUEVO ----
+                
 
                  if (SPECIAL_INGRESO_RUBROS.includes(rubro)) {
                      for (let i = 0; i < 12; i++) {
