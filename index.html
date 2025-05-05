@@ -573,9 +573,9 @@
                 </ul>
             </p>
             <div id="file-upload-area" onclick="document.getElementById('excel-file-input').click()">
-                  <p><i class="fas fa-file-excel"></i><br>Arrastra tu archivo Excel aquí (.xlsx, .xls) o haz clic para seleccionar</p>
-                  <input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload(this.files)">
-                  <button type="button" class="button-primary"><i class="fas fa-folder-open"></i> Seleccionar Archivo</button>
+                 <p><i class="fas fa-file-excel"></i><br>Arrastra tu archivo Excel aquí (.xlsx, .xls) o haz clic para seleccionar</p>
+                 <input type="file" id="excel-file-input" accept=".xlsx, .xls" style="display: none;" onchange="handleFileUpload(this.files)">
+                 <button type="button" class="button-primary" onclick="event.stopPropagation(); document.getElementById('excel-file-input').click()" style="pointer-events: auto;"><i class="fas fa-folder-open"></i> Seleccionar Archivo</button>
                  <button type="button" onclick="event.stopPropagation(); loadSampleData()" style="margin-left: 10px; pointer-events: auto;" class="button-secondary"><i class="fas fa-database"></i> Cargar Datos Ejemplo</button>
             </div>
             <div id="file-upload-feedback"></div>
@@ -811,7 +811,7 @@
                      rubroOrder: { gastos: [], ingresos: [] },
                      data: { gastos: {}, ingresos: {} },
                      monthStatus: { gastos: {}, ingresos: {} },
-                     reserveFund: { type: 'doughnut', values: Array(12).fill(5) },
+                     reserveFund: { type: 'percent', values: Array(12).fill(5) },
                      calculated: {
                          gastoAjustado: {}, totalGastoRubroMes: {}, totalGastoProyectadoMes: Array(12).fill(0),
                          ingresoAjustado: {}, totalIngresoRubroMes: {}, totalIngresoProyectadoMes: Array(12).fill(0),
@@ -851,7 +851,7 @@
              scenarioData.rubroOrder = scenarioData.rubroOrder ?? { gastos: [], ingresos: [] };
              scenarioData.data = scenarioData.data ?? { gastos: {}, ingresos: {} };
              scenarioData.monthStatus = scenarioData.monthStatus ?? { gastos: {}, ingresos: {} };
-             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'doughnut', values: Array(12).fill(5) };
+             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'percent', values: Array(12).fill(5) };
              scenarioData.calculated = scenarioData.calculated ?? {}; // Ensure calculated object exists
              scenarioData.calculated.annualTotals = scenarioData.calculated.annualTotals ?? {}; // Ensure annualTotals object exists
 
@@ -1817,29 +1817,30 @@
                             font: { // Apply font settings here
                                  size: legendFontSize, // Apply increased size
                             },
-                             
-generateLabels: chart => {
-    const { labels } = chart.data;
-    const dataset = chart.data.datasets[0];
-    if (!labels.length || !dataset) return [];
-    const total = dataset.data.reduce((a, b) => a + b, 0);
-    const items = [];
-    labels.forEach((label, i) => {
-        const value = dataset.data[i];
-        if (value === 0) return; // Omit zero-value slices entirely
-        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) + '%' : '0.0%';
-        items.push({
-            text: `${label} (${percentage})`,
-            fillStyle: dataset.backgroundColor[i],
-            strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
-            lineWidth: dataset.borderWidth || 0,
-            hidden: false, // never mark as hidden to avoid strikethrough
-            index: i
-        });
-    });
-    return items;
-}
-,
+                             generateLabels: chart => {
+                                const data = chart.data;
+                                if (!data.labels.length || !data.datasets.length) return [];
+                                const { labels } = data; const dataset = data.datasets[0];
+                                const total = dataset.data.reduce((a, b) => a + b, 0);
+                                return labels.map((label, i) => {
+                                    const value = dataset.data[i];
+                                     // --- MODIFICADO: Generate label text without dashed description ---
+                                     const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0.0%';
+                                     const textLabel = `${label} (${percentage})`; // Format: "Label (Percentage)"
+
+                                    return {
+                                        text: textLabel, // Use the custom text label
+                                        fillStyle: dataset.backgroundColor[i],
+                                        strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
+                                        lineWidth: dataset.borderWidth || 0,
+                                        // Note: Chart.js automatically handles hiding legend entries for hidden data
+                                        hidden: chart.getDataVisibility(i) || value === 0, // Hide if data is zero as well
+                                        index: i
+                                    };
+                                });
+                             }
+                         }
+                     },
                      tooltip: {
                          backgroundColor: hexToRgba(cardBg, 0.9),
                          titleColor: textColor, bodyColor: textColor,
@@ -2952,7 +2953,7 @@ generateLabels: chart => {
              if (!scenarioData) { showSnackbar("No hay escenario activo.", true, 'error'); return; }
 
              // Ensure reserveFund object and values array exist
-             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'doughnut', values: Array(12).fill(5) };
+             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'percent', values: Array(12).fill(5) };
              if (!Array.isArray(scenarioData.reserveFund.values) || scenarioData.reserveFund.values.length !== 12) {
                  scenarioData.reserveFund.values = Array(12).fill(scenarioData.reserveFund.type === 'percent' ? 5 : 0);
              }
