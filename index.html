@@ -3702,3 +3702,36 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
     </script>
 </body>
 </html>
+
+<!-- Plugin: legendTweaks -->
+<script>
+/* Ajustes globales de leyenda:
+   1. Ordenar etiquetas por valor descendente (%).
+   2. Reducir fuente 10 %.
+   3. Remover táchado (line‑through) incluso al ocultar datos. */
+const legendTweaks = {
+  id: 'legendTweaks',
+  beforeInit(chart, _args, _opts) {
+    chart.options.plugins.legend ||= {};
+    chart.options.plugins.legend.labels ||= {};
+    const origGenerate = Chart.overrides.doughnut.plugins.legend.labels.generateLabels;
+    chart.options.plugins.legend.labels.generateLabels = function(c) {
+      const labels = origGenerate(c);
+      // data array
+      const dataValues = c.data.datasets[0]?.data || [];
+      // sort indices by value desc
+      labels.sort((a,b)=> (dataValues[b.index]||0) - (dataValues[a.index]||0));
+      // remove line-through & shrink font
+      labels.forEach(l => {
+        l.fontStyle = '';       // sin tachado
+        l.font.size = Math.round((l.font.size||12)*0.9);
+      });
+      return labels;
+    };
+  }
+};
+// registrar plugin global
+if (window.Chart && !Chart.registry.plugins.get('legendTweaks')) {
+  Chart.register(legendTweaks);
+}
+</script>
