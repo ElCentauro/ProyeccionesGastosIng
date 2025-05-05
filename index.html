@@ -3742,38 +3742,46 @@ document.addEventListener('DOMContentLoaded', initRubrosToggle);
 <!-- End Toggle Rubros -->
 
 
-<!-- Auto-cálculo Expensa Real -->
+<!-- Auto Expensa Real v2 -->
 <script>
-/**
- * Busca en dataIngresos el rubro 'Expensas' / detalle 'Expensas Ordinarias'
- * y copia sus importes mensuales a la columna Expensa Real ($) del Resumen Mensual.
- *
- * Requiere:
- * - El archivo Excel ya cargado y parseado a window.appState.ingresos
- * - Función updateResumen() refresca la UI.
- */
 function completarExpensaReal() {
-  if(!window.appState || !appState.ingresos) return;
-  const expRow = appState.ingresos.find(r =>
-     r.rubro?.toLowerCase() === 'expensas' &&
-     r.detalle?.toLowerCase() === 'expensas ordinarias');
+  if(!window.appState || !appState.ingresos || !appState.resumenMensual) return;
+
+  // Buscar fila de Expensas Ordinarias
+  const expRow = appState.ingresos.find(r => {
+    const rub = (r.rubro||'').toString().toLowerCase().trim();
+    const det = (r.detalle||'').toString().toLowerCase().trim();
+    return rub === 'expensas' && det === 'expensas ordinarias';
+  });
   if(!expRow) return;
 
-  // supongamos que los meses están en propiedades m1..m12 (enero=1)
-  const target = appState.resumenMensual?.expensaReal || {};
-  for(let m=1;m<=12;m++){
-     const key = 'm'+m;
-     if(expRow[key]!=null){
-        target[key] = expRow[key];
-     }
-  }
-  // guardar y refrescar UI
-  appState.resumenMensual.expensaReal = target;
-  if(typeof updateResumen === 'function') updateResumen();
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  meses.forEach((mes, idx) => {
+     let val = expRow[mes] ?? expRow['m'+(idx+1)] ?? expRow[idx] ?? 0;
+     if(!appState.resumenMensual[idx]) appState.resumenMensual[idx] = {};
+     appState.resumenMensual[idx].expensaReal = val;
+  });
+
+  if(typeof renderResumenTable==='function') renderResumenTable();
 }
 
-// Llamar después de parsear Excel
-document.addEventListener('DATA_READY', completarExpensaReal);
+// Hook después del upload
+if(typeof handleFileUpload==='function'){
+  const originalHFU = handleFileUpload;
+  window.handleFileUpload = function(files){
+     originalHFU(files);
+     setTimeout(completarExpensaReal,0);
+  }
+}
+
+// Hook reload scenario
+if(typeof cargarEscenario==='function'){
+  const originalCE = cargarEscenario;
+  window.cargarEscenario = function(key){
+     originalCE(key);
+     setTimeout(completarExpensaReal,0);
+  }
+}
 </script>
 
 </body>
