@@ -3703,35 +3703,35 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 </body>
 </html>
 
-<!-- Plugin: legendTweaks -->
+<!-- Plugin: legendTweaks v2 -->
 <script>
-/* Ajustes globales de leyenda:
-   1. Ordenar etiquetas por valor descendente (%).
-   2. Reducir fuente 10 %.
-   3. Remover táchado (line‑through) incluso al ocultar datos. */
-const legendTweaks = {
-  id: 'legendTweaks',
-  beforeInit(chart, _args, _opts) {
+const legendTweaks_v2 = {
+  id: 'legendTweaks_v2',
+  beforeInit(chart) {
+    // 1) Quitar tachado
+    chart.options.plugins ||= {};
     chart.options.plugins.legend ||= {};
     chart.options.plugins.legend.labels ||= {};
-    const origGenerate = Chart.overrides.doughnut.plugins.legend.labels.generateLabels;
+    chart.options.plugins.legend.labels.strikethrough = false;
+
+    // 2) Reducir fuente 10 %
+    const baseSize = (Chart.defaults.font && Chart.defaults.font.size) ? Chart.defaults.font.size : 12;
+    chart.options.plugins.legend.labels.font = ctx => {
+      return { size: Math.round(baseSize * 0.9) };
+    };
+
+    // 3) Ordenar etiquetas de mayor a menor según dato
+    const originalGenerate = Chart.overrides.doughnut.plugins.legend.labels.generateLabels;
     chart.options.plugins.legend.labels.generateLabels = function(c) {
-      const labels = origGenerate(c);
-      // data array
+      const lbls = originalGenerate(c);
       const dataValues = c.data.datasets[0]?.data || [];
-      // sort indices by value desc
-      labels.sort((a,b)=> (dataValues[b.index]||0) - (dataValues[a.index]||0));
-      // remove line-through & shrink font
-      labels.forEach(l => {
-        l.fontStyle = '';       // sin tachado
-        l.font.size = Math.round((l.font.size||12)*0.9);
-      });
-      return labels;
+      lbls.sort((a,b) => (dataValues[b.index]||0) - (dataValues[a.index]||0));
+      return lbls;
     };
   }
 };
-// registrar plugin global
-if (window.Chart && !Chart.registry.plugins.get('legendTweaks')) {
-  Chart.register(legendTweaks);
+
+if (window.Chart && !Chart.registry.plugins.get('legendTweaks_v2')) {
+  Chart.register(legendTweaks_v2);
 }
 </script>
