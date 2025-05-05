@@ -10,35 +10,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Librería Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<!-- Plugin doughnut 3D shadow -->
 <script>
-// --- 3D Donut shading plugin ---
-const donut3DPlugin = {
-    id: 'donut3DPlugin',
-    afterDatasetDraw(chart, args, pluginOptions) {
-        const {ctx, chartArea: {width, height}} = chart;
-        const meta = chart.getDatasetMeta(args.index);
-        meta.data.forEach(arc => {
-            const model = arc.getProps(['x','y','innerRadius','outerRadius','startAngle','endAngle'], true);
-            const midAngle = (model.startAngle + model.endAngle) / 2;
-            const gradient = ctx.createRadialGradient(model.x, model.y, model.innerRadius, model.x, model.y, model.outerRadius);
-            gradient.addColorStop(0, 'rgba(255,255,255,0.6)');
-            gradient.addColorStop(0.55, arc.options.backgroundColor);
-            gradient.addColorStop(1, 'rgba(0,0,0,0.3)');
-            ctx.save();
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(model.x, model.y, model.outerRadius, model.startAngle, model.endAngle);
-            ctx.arc(model.x, model.y, model.innerRadius, model.endAngle, model.startAngle, true);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-        });
-    }
+/* Plugin: doughnutShadow3D
+   Añade una sombra suave debajo de cada porción para simular profundidad 3 D.
+   Seguro para todos los datasets (evita NaN en createRadialGradient). */
+const doughnutShadow3D = {
+  id: 'doughnutShadow3D',
+  afterDatasetDraw(chart, args, opts) {
+    const {ctx} = chart;
+    if (args.meta.type !== 'doughnut') return;
+
+    args.meta.data.forEach(segment => {
+      const {x, y, startAngle, endAngle, innerRadius, outerRadius} = segment;
+      if (!isFinite(x) || !isFinite(y) || !isFinite(innerRadius) || !isFinite(outerRadius)) return;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';      // shadow color
+      ctx.translate(0, 4);                     // vertical offset
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, outerRadius, startAngle, endAngle);
+      ctx.arc(x, y, innerRadius, endAngle, startAngle, true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+  }
 };
-// Register plugin globally
-if (typeof Chart !== 'undefined' && !Chart.registry.plugins.get('donut3DPlugin')) {
-    Chart.register(donut3DPlugin);
+// Registrar plugin globalmente
+if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
+  Chart.register(doughnutShadow3D);
 }
 </script>
 
@@ -1868,7 +1870,7 @@ if (typeof Chart !== 'undefined' && !Chart.registry.plugins.get('donut3DPlugin')
                                         strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
                                         lineWidth: dataset.borderWidth || 0,
                                         // Note: Chart.js automatically handles hiding legend entries for hidden data
-                                        hidden: value === 0, // Hide if data is zero as well
+                                        hidden: chart.getDataVisibility(i) || value === 0, // Hide if data is zero as well
                                         index: i
                                     };
                                 });
