@@ -3700,6 +3700,47 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         }
 
     </script>
+
+<!-- Toggle Rubros -->
+<style>
+.rubro-detail.collapsed { display:none; }
+.rubro-header { cursor:pointer; }
+.toggle-all-btn { background:none; border:none; font-size:1.2rem; cursor:pointer; margin-left:.5rem;}
+</style>
+<script>
+function initRubrosToggle(){
+  document.querySelectorAll('.rubro-header').forEach(h=>{
+    h.addEventListener('click', ()=> toggleDetail(h));
+  });
+}
+function toggleDetail(header){
+  const detail = header.nextElementSibling;
+  if(detail){
+    detail.classList.toggle('collapsed');
+    const icon = header.querySelector('.arrow');
+    if(icon) icon.textContent = detail.classList.contains('collapsed') ? '▼' : '▲';
+  }
+}
+// Botones globales
+function toggleSection(sectionId, collapse){
+  document.querySelectorAll('#'+sectionId+' .rubro-detail').forEach(d=>{
+     if(collapse===undefined){
+        d.classList.toggle('collapsed');
+     }else{
+        d.classList.toggle('collapsed', collapse);
+     }
+  });
+  // actualizar iconos
+  document.querySelectorAll('#'+sectionId+' .rubro-header .arrow').forEach(i=>{
+     const header=i.closest('.rubro-header');
+     const det=header.nextElementSibling;
+     i.textContent = det.classList.contains('collapsed') ? '▼':'▲';
+  });
+}
+document.addEventListener('DOMContentLoaded', initRubrosToggle);
+</script>
+<!-- End Toggle Rubros -->
+
 </body>
 </html>
 
