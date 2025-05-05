@@ -1167,7 +1167,13 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 // 6. Calculate Annual Totals for new/modified columns
              calculated.annualTotals.cuotaSobreGastos = calculated.cuotaSobreGastosMes.reduce((a, b) => a + b, 0);
              calculated.annualTotals.cuotaIpc = calculated.cuotaIpcMes.reduce((a, b) => a + b, 0); // Sum calculated IPC cuotas
-             calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a, b) => a + b, 0); // Sum base real expensas
+             calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a, b) =
+             // --- Fallback: si cuotaRealBaseMes sigue vacía, copio desde totalIngresoRubroMes ---
+             if (calculated.cuotaRealBaseMes.every(v => v === 0) && calculated.totalIngresoRubroMes?.[CUOTA_RUBRO_NAME]) {
+                 calculated.cuotaRealBaseMes = [...calculated.totalIngresoRubroMes[CUOTA_RUBRO_NAME]];
+                 calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a,b)=>a+b,0);
+             }
+> a + b, 0); // Sum base real expensas
 
 
              console.log("Recálculo Finalizado.", calculated);
