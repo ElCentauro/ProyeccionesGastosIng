@@ -266,7 +266,7 @@
         .input-group { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .input-group label { margin-bottom: 0; font-weight: normal;}
         .input-group input[type="radio"] { width: auto; margin-right: 5px; }
-        .input-small { width: 150px; display: inline-block; margin-left: 10px; } /* Note: This class seems unused in the provided HTML */
+        .input-small { width: 150px; display: inline-block; margin-left: 10px; }
 
         /* --- Tablas --- */
         .table-container { overflow-x: auto; margin-top: 25px; border: 1px solid var(--border-color); border-radius: 6px; }
@@ -312,6 +312,16 @@
         .collapsible-table tbody tr.detail-row td:first-child { padding-left: 40px; /* Indent details more */ }
         body.dark-mode .collapsible-table tbody tr.detail-row { background-color: #353535; }
         .collapsible-table tfoot tr { font-weight: bold; background-color: var(--table-header-bg); border-top: 2px solid var(--border-color); }
+
+         /* Styles for Group/Ungroup All buttons */
+        .table-actions {
+            margin-bottom: 15px;
+             display: flex;
+             justify-content: flex-end; /* Align buttons to the right */
+             gap: 10px;
+             flex-wrap: wrap;
+        }
+
 
         /* --- Componentes UI Específicos --- */
         #dashboard-summary { border-collapse: separate; border-spacing: 0; }
@@ -360,16 +370,6 @@
         .management-list li button { flex-shrink: 0; }
         #coefficient-editor { margin-top: 25px; } #coefficient-editor h4 { margin-bottom: 15px;}
         #coefficient-editor .table-container { max-height: 450px; overflow-y: auto;}
-
-        /* Styles for Group/Ungroup All buttons */
-        .table-actions {
-            margin-bottom: 15px;
-             display: flex;
-             justify-content: flex-end; /* Align buttons to the right */
-             gap: 10px;
-             flex-wrap: wrap;
-        }
-
 
         /* --- Snackbar --- */
         #snackbar {
@@ -704,6 +704,12 @@
         const SPECIAL_INGRESO_RUBROS = [CUOTA_RUBRO_NAME, EXTRA_CUOTA_RUBRO_NAME]; // Actualizado automáticamente
 
         let appState = getDefaultAppState(); // Iniciar con estado por defecto limpio
+
+        // Chart instances (moved to scope variables)
+        let evolutivoCuotaChart_instance = null;
+        let participacionGastosChart_instance = null;
+        let participacionIngresosChart_instance = null;
+
 
         // --- Inicialización ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -1253,23 +1259,27 @@
         function renderEmptyState() {
             console.log("Renderizando estado vacío...");
             // Clear tables
-            const summaryTbody = document.getElementById('dashboard-summary')?.querySelector('tbody');
-            const summaryTfoot = document.getElementById('dashboard-summary')?.querySelector('tfoot');
-             const summaryHeaderCells = document.getElementById('dashboard-summary')?.querySelector('thead tr')?.cells?.length || 7;
+            const summaryTable = document.getElementById('dashboard-summary');
+            const summaryTbody = summaryTable?.querySelector('tbody');
+            const summaryTfoot = summaryTable?.querySelector('tfoot');
+             const summaryHeaderCells = summaryTable?.querySelector('thead tr')?.cells?.length || 7;
             if(summaryTbody) summaryTbody.innerHTML = `<tr><td colspan="${summaryHeaderCells}" class="text-muted" style="text-align: center; padding: 20px;">No hay datos calculados para este escenario. Carga datos o usa los de ejemplo.</td></tr>`;
             if(summaryTfoot) summaryTfoot.innerHTML = '';
 
-            const gastosTheadCells = document.getElementById('gastos-detail-table')?.querySelector('thead tr')?.cells?.length || 14;
-            const gastosTbody = document.getElementById('gastos-detail-table')?.querySelector('tbody');
-            const gastosTfoot = document.getElementById('gastos-detail-table')?.querySelector('tfoot');
+            const gastosTable = document.getElementById('gastos-detail-table');
+            const gastosTheadCells = gastosTable?.querySelector('thead tr')?.cells?.length || 14;
+            const gastosTbody = gastosTable?.querySelector('tbody');
+            const gastosTfoot = gastosTable?.querySelector('tfoot');
             if(gastosTbody) gastosTbody.innerHTML = `<tr><td colspan="${gastosTheadCells}" class="text-muted" style="text-align: center; padding: 20px;">No hay datos de gastos.</td></tr>`;
             if(gastosTfoot) gastosTfoot.innerHTML = '';
 
-            const ingresosTheadCells = document.getElementById('ingresos-detail-table')?.querySelector('thead tr')?.cells?.length || 14;
-            const ingresosTbody = document.getElementById('ingresos-detail-table')?.querySelector('tbody');
-            const ingresosTfoot = document.getElementById('ingresos-detail-table')?.querySelector('tfoot');
+            const ingresosTable = document.getElementById('ingresos-detail-table');
+            const ingresosTheadCells = ingresosTable?.querySelector('thead tr')?.cells?.length || 14;
+            const ingresosTbody = ingresosTable?.querySelector('tbody');
+            const ingresosTfoot = ingresosTable?.querySelector('tfoot');
             if(ingresosTbody) ingresosTbody.innerHTML = `<tr><td colspan="${ingresosTheadCells}" class="text-muted" style="text-align: center; padding: 20px;">No hay datos de ingresos.</td></tr>`;
             if(ingresosTfoot) ingresosTfoot.innerHTML = '';
+
 
             // Clear charts
             destroyChart('evolutivoCuotaChart'); displayChartNoData('evolutivoCuotaChart', true);
@@ -1611,7 +1621,6 @@
              const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
              const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
              const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-             const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
 
 
              const chartColors = [ // Define a consistent palette
@@ -1670,10 +1679,13 @@
              destroyChart('participacionGastosChart');
              const ctxGastos = document.getElementById('participacionGastosChart')?.getContext('2d');
              // Filter labels based on *global* settings first, then check for > 0 value
-             const gastoLabels = (appState.settings.rubros?.gastos || []).filter(rubro =>
-                 (calculated.annualTotals?.gastos?.[rubro] || 0) > 0
+             // Filter out zero values before mapping to labels/data
+             const activeGastoRubros = (appState.settings.rubros?.gastos || []).filter(rubro =>
+                  (calculated.annualTotals?.gastos?.[rubro] || 0) > 0
              );
-             const gastoData = gastoLabels.map(rubro => calculated.annualTotals.gastos[rubro]);
+             const gastoLabels = activeGastoRubros;
+             const gastoData = activeGastoRubros.map(rubro => calculated.annualTotals.gastos[rubro]);
+
              displayChartNoData('participacionGastosChart', gastoData.length === 0);
 
              if (ctxGastos && gastoData.length > 0) {
@@ -1697,10 +1709,13 @@
              destroyChart('participacionIngresosChart');
              const ctxIngresos = document.getElementById('participacionIngresosChart')?.getContext('2d');
              // Filter labels based on *global* settings first, then check for > 0 value
-             const ingresoLabels = (appState.settings.rubros?.ingresos || []).filter(rubro =>
-                 (calculated.annualTotals?.ingresos?.[rubro] || 0) > 0
-             );
-             const ingresoData = ingresoLabels.map(rubro => calculated.annualTotals.ingresos[rubro]);
+              // Filter out zero values before mapping to labels/data
+             const activeIngresoRubros = (appState.settings.rubros?.ingresos || []).filter(rubro =>
+                  (calculated.annualTotals?.ingresos?.[rubro] || 0) > 0
+              );
+             const ingresoLabels = activeIngresoRubros;
+             const ingresoData = activeIngresoRubros.map(rubro => calculated.annualTotals.ingresos[rubro]);
+
              displayChartNoData('participacionIngresosChart', ingresoData.length === 0);
 
              if (ctxIngresos && ingresoData.length > 0) {
@@ -1785,8 +1800,9 @@
              const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
              const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
              const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-             const baseFontSize = 16; // Assuming base font size from body/html
-             const legendFontSize = Math.round(baseFontSize * 1.3); // Increase by 30%
+             const baseFontSize = parseFloat(getComputedStyle(document.body).fontSize); // Get actual computed font size
+             const legendFontSize = Math.round(baseFontSize * 1.2); // Increase by 20%
+
 
              return {
                  responsive: true,
@@ -1818,7 +1834,7 @@
                                         strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
                                         lineWidth: dataset.borderWidth || 0,
                                         // Note: Chart.js automatically handles hiding legend entries for hidden data
-                                        hidden: chart.getDataVisibility(i),
+                                        hidden: chart.getDataVisibility(i) || value === 0, // Hide if data is zero as well
                                         index: i
                                     };
                                 });
@@ -3178,13 +3194,23 @@
              const panel = document.getElementById('reserve-fund-panel');
              if (!panel) return;
 
-             const unitLabel = reserveFund.type === 'percent' ? '%' : '$';
-             const currentStep = reserveFund.type === 'percent' ? '0.1' : '100';
+             const unitLabel = scenarioData.reserveFund.type === 'percent' ? '%' : '$'; // Use scenarioData type for UI label
+             const currentStep = scenarioData.reserveFund.type === 'percent' ? '0.1' : '100'; // Use scenarioData type for step
 
-             panel.querySelectorAll('input[type="number"]').forEach(input => input.step = currentStep);
-             panel.querySelectorAll('.month-config span').forEach(span => span.textContent = unitLabel);
+             // Note: The radio button change updates the scenarioData.reserveFund.type *after* updateReserveUI is called by the handler.
+             // So it's better to get the *selected* radio value for UI updates, and the saved value for state logic in saveReserveFund.
+             const uiSelectedType = document.getElementById('reserve-type-percent').checked ? 'percent' : 'fixed';
+             const uiUnitLabel = uiSelectedType === 'percent' ? '%' : '$';
+             const uiCurrentStep = uiSelectedType === 'percent' ? '0.1' : '100';
 
-             console.log(`UI fondo reserva actualizada a tipo: ${selectedType}`);
+
+             panel.querySelectorAll('input[type="number"]').forEach(input => {
+                 input.step = uiCurrentStep;
+                 // Optional: Adjust value if switching types dramatically? No, better to keep input value as is.
+             });
+             panel.querySelectorAll('.month-config span').forEach(span => span.textContent = uiUnitLabel);
+
+             console.log(`UI fondo reserva actualizada a tipo: ${uiSelectedType}`);
         }
 
         function exportToExcel() {
@@ -3228,17 +3254,26 @@
                          gastosRows.push([rubro, detail, coefName, ...values, annualTotal]);
                      });
                  });
-                 const gastosSheetData = createSheetData(`DETALLE GASTOS ${year} - ${scenarioName}`, gastosHeaders, gastosRows);
-                 const ws_gastos = XLSX.utils.aoa_to_sheet(gastosSheetData);
+                 const ws_gastos_array = createSheetData(`DETALLE GASTOS ${year} - ${scenarioName}`, gastosHeaders, gastosRows);
+                 const ws_gastos = XLSX.utils.aoa_to_sheet(ws_gastos_array);
                  // Basic Widths
                  ws_gastos['!cols'] = [{wch:20},{wch:25},{wch:18}, ...Array(12).fill({wch:12}), {wch:14}];
                  // Apply formatting (basic example for values)
-                 gastosRows.forEach((_, rowIndex) => {
-                     for (let col = 3; col < 15 + 1; col++) { // Months + Total
-                         const cellRef = XLSX.utils.encode_cell({r: rowIndex + 3, c: col}); // +3 for title, space, header
-                         if(ws_gastos[cellRef]) { ws_gastos[cellRef].z = currencyFormat; ws_gastos[cellRef].t = 'n';}
-                     }
-                 });
+                 // Data starts at row index 3 (0-based), col index 3 (0-based)
+                 const dataStartRow = ws_gastos_array.findIndex(row => row === gastosHeaders) + 1; // Find header row, add 1
+                 if (dataStartRow !== -1) {
+                      for (let rowIndex = dataStartRow; rowIndex < ws_gastos_array.length; rowIndex++) {
+                          for (let col = 3; col < 15 + 1; col++) { // Months (3-14) + Total (15)
+                              const cellRef = XLSX.utils.encode_cell({r: rowIndex, c: col});
+                               // Only apply format if cell exists and contains a number
+                               if(ws_gastos[cellRef] && typeof ws_gastos[cellRef].v === 'number') {
+                                   ws_gastos[cellRef].z = currencyFormat;
+                                   // Ensure cell type is number 'n' (aoa_to_sheet usually handles this but explicit is safer)
+                                   ws_gastos[cellRef].t = 'n';
+                               }
+                          }
+                      }
+                 }
                  XLSX.utils.book_append_sheet(wb, ws_gastos, "Detalle Gastos");
 
 
@@ -3255,27 +3290,34 @@
                         ingresosRows.push([`${rubro}${rubroNote}`, detail, ...values, annualTotal]);
                     });
                  });
-                 const ingresosSheetData = createSheetData(`DETALLE INGRESOS (Valores Base) ${year} - ${scenarioName}`, ingresosHeaders, ingresosRows);
+                 const ws_ingresos_array = createSheetData(`DETALLE INGRESOS (Valores Base) ${year} - ${scenarioName}`, ingresosHeaders, ingresosRows);
                  const ws_ingresos = XLSX.utils.aoa_to_sheet(ws_ingresos_array);
                  ws_ingresos['!cols'] = [{wch:25},{wch:25}, ...Array(12).fill({wch:12}), {wch:14}];
-                 ingresosRows.forEach((_, rowIndex) => {
-                     for (let col = 2; col < 14 + 1; col++) { // Months + Total
-                         const cellRef = XLSX.utils.encode_cell({r: rowIndex + 3, c: col});
-                         if(ws_ingresos[cellRef]) { ws_ingresos[cellRef].z = currencyFormat; ws_ingresos[cellRef].t = 'n';}
+                 // Data starts at row index 3 (0-based), col index 2 (0-based)
+                 const ingresosDataStartRow = ws_ingresos_array.findIndex(row => row === ingresosHeaders) + 1;
+                  if (ingresosDataStartRow !== -1) {
+                     for (let rowIndex = ingresosDataStartRow; rowIndex < ws_ingresos_array.length; rowIndex++) {
+                         for (let col = 2; col < 14 + 1; col++) { // Months (2-13) + Total (14)
+                             const cellRef = XLSX.utils.encode_cell({r: rowIndex, c: col});
+                             if(ws_ingresos[cellRef] && typeof ws_ingresos[cellRef].v === 'number') {
+                                  ws_ingresos[cellRef].z = currencyFormat;
+                                  ws_ingresos[cellRef].t = 'n';
+                              }
+                         }
                      }
-                 });
+                  }
                  XLSX.utils.book_append_sheet(wb, ws_ingresos, "Detalle Ingresos (Base)");
 
 
                  // --- 3. Resumen General Sheet ---
                  const resumenHeaders = ["Concepto", ...FULL_MONTHS, "Total Anual"];
                  const resumenRows = [];
-                 const addRow = (label, values, format, isPercent = false) => {
+                 const addRow = (label, values, format, isPercent = false, isUF = false) => {
                     const annual = values.reduce ? values.reduce((a, b) => a + (b || 0), 0) : values; // Sum if array, else take value
                     resumenRows.push([label, ...values, annual]);
-                    const lastRowIndex = resumenRows.length - 1 + 3; // 0-based + 3 offset
-                    // Mark row for formatting later
-                     resumenRows[resumenRows.length-1].formatInfo = { format, isPercent, rowIndex: lastRowIndex };
+                    const lastRowIndex = resumenRows.length - 1; // 0-based index within resumenRows array
+                    // Store formatting info for this row
+                     resumenRows[lastRowIndex].formatInfo = { format, isPercent, isUF };
                  };
 
                  // Gastos Section
@@ -3298,16 +3340,26 @@
 
                  // Fondo Reserva Section
                  resumenRows.push(["--- FONDO RESERVA ---"]);
-                 const reserveLabel = `Fondo Reserva Config (${reserveFund.type === 'percent' ? '%' : '$'})`;
-                 addRow(reserveLabel, reserveFund.values.map(v => parseFloat(v || 0)), reserveFund.type === 'percent' ? percentFormat : currencyFormat, reserveFund.type === 'percent');
+                 // Ensure reserveFund object and values exist/are valid
+                 const reserveValues = Array.isArray(reserveFund?.values) && reserveFund.values.length === 12
+                                     ? reserveFund.values
+                                     : Array(12).fill(reserveFund?.type === 'percent' ? 5 : 0);
+                 const reserveType = reserveFund?.type === 'fixed' ? 'fixed' : 'percent'; // Default to percent
+                 const reserveLabel = `Fondo Reserva Config (${reserveType === 'percent' ? '%' : '$'})`;
+                 addRow(reserveLabel, reserveValues.map(v => parseFloat(v || 0)), reserveType === 'percent' ? percentFormat : currencyFormat, reserveType === 'percent');
                  addRow("Fondo Reserva Calculado ($)", calculated.fondoReservaMes || [], currencyFormat);
                  resumenRows.push([]); // Spacer
 
                  // Cuotas & IPC Section
                  resumenRows.push(["--- CUOTAS Y REFERENCIAS ---"]);
-                 addRow(`Unidades Funcionales (UF)`, [cantidadUnidades, ...Array(11).fill(null)], numberFormat); // Show UF count once
+                 // UF row: put value only in first month column
+                 const ufValues = Array(12).fill(null);
+                 ufValues[0] = cantidadUnidades; // Put UF count in the first month column
+                 addRow(`Unidades Funcionales (UF)`, ufValues, numberFormat, false, true); // Mark as UF row
+
                  addRow("Cuota s/Gtos Calculada ($)", calculated.cuotaSobreGastosMes || [], currencyFormat);
-                 addRow("IPC Referencia (%)", (ipcSettings || Array(12).fill(0)), percentFormat, true);
+                 // Use the snapshot stored in calculated.ipcManual for the report
+                 addRow("IPC Referencia (%)", calculated.ipcManual || Array(12).fill(0), percentFormat, true);
                  addRow("Cuota IPC Calculada ($)", calculated.cuotaIpcMes || [], currencyFormat);
                  addRow("Cuota Real Base ($)", calculated.cuotaRealBaseMes || [], currencyFormat);
 
@@ -3315,22 +3367,36 @@
                  const ws_resumen_array = createSheetData(`RESUMEN GENERAL ${year} - ${scenarioName}`, resumenHeaders, resumenRows);
                  const ws_resumen = XLSX.utils.aoa_to_sheet(ws_resumen_array);
                  ws_resumen['!cols'] = [{wch:30}, ...Array(12).fill({wch:12}), {wch:14}];
+
                   // Apply Formatting based on stored info
-                 resumenRows.forEach(row => {
-                    if (row.formatInfo) {
-                         for (let col = 1; col < 13 + 1; col++) { // Months (1-12) + Total (13)
-                             const cellRef = XLSX.utils.encode_cell({r: row.formatInfo.rowIndex, c: col});
-                             if(ws_resumen[cellRef]) {
-                                 // Convert percent values for Excel (e.g., 5 -> 0.05)
-                                 if (row.formatInfo.isPercent && typeof ws_resumen[cellRef].v === 'number') {
-                                     ws_resumen[cellRef].v /= 100;
-                                 }
-                                 ws_resumen[cellRef].z = row.formatInfo.format;
-                                 ws_resumen[cellRef].t = 'n';
-                             }
-                         }
-                    }
-                 });
+                  // Find the actual start row index for data in the sheet
+                 const resumenDataStartRow = ws_resumen_array.findIndex(row => row === resumenHeaders) + 1; // Find header row, add 1
+
+                 if (resumenDataStartRow !== -1) {
+                     for (let arrayRowIndex = 0; arrayRowIndex < resumenRows.length; arrayRowIndex++) {
+                          const rowInfo = resumenRows[arrayRowIndex].formatInfo;
+                          if (rowInfo) {
+                               const sheetRowIndex = resumenDataStartRow + arrayRowIndex; // Calculate corresponding row index in the sheet
+
+                               for (let col = 1; col < 13 + 1; col++) { // Months (1-12) + Total (13)
+                                   const cellRef = XLSX.utils.encode_cell({r: sheetRowIndex, c: col});
+                                   // Only apply format if cell exists and contains a number
+                                   if(ws_resumen[cellRef] && typeof ws_resumen[cellRef].v === 'number') {
+                                       // Convert percent values for Excel (e.g., 5 -> 0.05) unless it's the UF row
+                                       if (rowInfo.isPercent && !rowInfo.isUF) {
+                                           ws_resumen[cellRef].v /= 100;
+                                       }
+                                       ws_resumen[cellRef].z = rowInfo.format;
+                                        ws_resumen[cellRef].t = 'n';
+                                   } else if (rowInfo.isUF && col === 1 && ws_resumen[cellRef] && typeof ws_resumen[cellRef].v === 'number') {
+                                        // Apply number format specifically to the first month cell for UF row
+                                        ws_resumen[cellRef].z = rowInfo.format;
+                                         ws_resumen[cellRef].t = 'n';
+                                   }
+                               }
+                          }
+                     }
+                 }
                  XLSX.utils.book_append_sheet(wb, ws_resumen, "Resumen General");
 
 
@@ -3349,13 +3415,16 @@
         function exportChart(canvasId, filename) {
              const canvas = document.getElementById(canvasId);
              const chartInstance = window[`${canvasId}_instance`];
-             if (!canvas || !chartInstance || chartInstance.data.datasets.every(ds => ds.data.length === 0 || ds.data.every(d => d === 0))) {
-                 showSnackbar(`Gráfico "${canvasId}" no encontrado o sin datos para exportar.`, true, 'warning');
+             // Check if canvas and instance exist, and if there is any non-zero data in the first dataset
+             if (!canvas || !chartInstance || !chartInstance.data || !chartInstance.data.datasets || chartInstance.data.datasets.length === 0 || chartInstance.data.datasets[0].data.every(d => d === null || d === undefined || d === 0)) {
+                  showSnackbar(`Gráfico "${canvasId}" no encontrado o sin datos para exportar.`, true, 'warning');
                  return;
              }
              try {
                  chartInstance.update('none'); // Ensure rendered without animation for export
-                 setTimeout(() => { // Allow canvas redraw
+                 // Allow a small delay for the canvas to potentially re-render after update('none')
+                 requestAnimationFrame(() => {
+                    requestAnimationFrame(() => { // Double rAF for safety
                      const imageURL = canvas.toDataURL('image/png');
                      const link = document.createElement('a');
                      link.href = imageURL;
@@ -3364,7 +3433,8 @@
                      link.click();
                      document.body.removeChild(link);
                      showSnackbar(`Gráfico "${filename}" exportado como PNG.`, false, 'success');
-                 }, 150);
+                    });
+                 });
              } catch (e) {
                  console.error(`Error exportando gráfico "${canvasId}":`, e);
                  showSnackbar("Error al exportar gráfico.", true, 'error');
