@@ -266,7 +266,7 @@
         .input-group { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .input-group label { margin-bottom: 0; font-weight: normal;}
         .input-group input[type="radio"] { width: auto; margin-right: 5px; }
-        .input-small { width: 150px; display: inline-block; margin-left: 10px; }
+        .input-small { width: 150px; display: inline-block; margin-left: 10px; } /* Note: This class seems unused in the provided HTML */
 
         /* --- Tablas --- */
         .table-container { overflow-x: auto; margin-top: 25px; border: 1px solid var(--border-color); border-radius: 6px; }
@@ -361,6 +361,16 @@
         #coefficient-editor { margin-top: 25px; } #coefficient-editor h4 { margin-bottom: 15px;}
         #coefficient-editor .table-container { max-height: 450px; overflow-y: auto;}
 
+        /* Styles for Group/Ungroup All buttons */
+        .table-actions {
+            margin-bottom: 15px;
+             display: flex;
+             justify-content: flex-end; /* Align buttons to the right */
+             gap: 10px;
+             flex-wrap: wrap;
+        }
+
+
         /* --- Snackbar --- */
         #snackbar {
             visibility: hidden; min-width: 300px; max-width: 90%;
@@ -417,6 +427,7 @@
             button { font-size: 0.95rem; padding: 10px 18px;}
             .tabs { gap: 2px; }
             .tab-link { padding: 8px 10px; font-size: 0.85rem;}
+             .table-actions { justify-content: center; }
         }
         @media (max-width: 576px) {
             h1 { font-size: 1.7rem; } .app-title { display: none; } header .container { justify-content: flex-end; }
@@ -483,6 +494,13 @@
 
             <h4 style="margin-top: 30px;">Detalle de Gastos Proyectados ($)</h4>
              <p class="text-muted" style="font-size: 0.9em;">Haga clic en una fila de rubro para expandir/colapsar los detalles. Las celdas mensuales de detalle se colorean según su origen: <span style="background-color: var(--real-month-bg); padding: 1px 4px; border-radius: 3px;">REAL</span> (cargado) o <span style="background-color: var(--estimated-month-bg); padding: 1px 4px; border-radius: 3px;">ESTIMADO</span> (proyectado/calculado).</p>
+
+            <!-- Added Group/Ungroup Buttons for Gastos -->
+            <div class="table-actions">
+                 <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('gastos', false)" title="Expandir todos los detalles de gastos"><i class="fas fa-expand"></i> Expandir Todo</button>
+                 <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('gastos', true)" title="Colapsar todos los detalles de gastos"><i class="fas fa-compress"></i> Colapsar Todo</button>
+            </div>
+
             <div class="table-container">
                 <table id="gastos-detail-table" class="collapsible-table">
                      <thead>
@@ -498,6 +516,13 @@
 
             <h4 style="margin-top: 30px;">Detalle de Ingresos Proyectados ($)</h4>
              <p class="text-muted" style="font-size: 0.9em;">Haga clic en una fila de rubro para expandir/colapsar. Los valores aquí son la base de cálculo (valor individual o por UF). El Total de Ingresos en el Resumen General puede incluir la multiplicación por UF.</p>
+
+             <!-- Added Group/Ungroup Buttons for Ingresos -->
+             <div class="table-actions">
+                 <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('ingresos', false)" title="Expandir todos los detalles de ingresos"><i class="fas fa-expand"></i> Expandir Todo</button>
+                 <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('ingresos', true)" title="Colapsar todos los detalles de ingresos"><i class="fas fa-compress"></i> Colapsar Todo</button>
+            </div>
+
             <div class="table-container">
                  <table id="ingresos-detail-table" class="collapsible-table">
                       <thead>
@@ -1207,7 +1232,7 @@
                  updateCurrentYearAndScenarioInUI(); // Still update year/scenario display (might show 'Ninguno')
                  updateScenarioSelector(); // Update selector too (might show empty)
                  updateReportsPanel(); // Disable report buttons
-                 updateSettingsPanel(); // Update settings panel based on global state
+                 updateSettingsPanel(); // Update settings lists and inputs
                  return; // Stop further UI updates
              }
 
@@ -1580,19 +1605,21 @@
              const { calculated } = scenarioData;
              const labels = MONTHS;
 
+             // Get current theme colors dynamically
              const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
              const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
              const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
-             const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
              const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
              const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+             const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+
 
              const chartColors = [ // Define a consistent palette
                 primaryColor, accentColor, '#ffc107', '#6f42c1', '#fd7e14', '#17a2b8',
                 '#dc3545', secondaryColor, '#20c997', '#0d6efd', '#198754', '#adb5bd' // More colors
              ];
 
-             // --- Evolutivo Expensa Chart (Line) --- MODIFICADO
+             // --- Evolutivo Expensa Chart (Line) ---
              destroyChart('evolutivoCuotaChart');
              const ctxEvolutivo = document.getElementById('evolutivoCuotaChart')?.getContext('2d');
              const evolutivoHasData = (calculated.cuotaSobreGastosMes?.some(v => v !== 0) ?? false) || (calculated.cuotaRealBaseMes?.some(v => v !== 0) ?? false);
@@ -1639,7 +1666,7 @@
              }
 
 
-             // --- Participación Gastos Chart (Pie) ---
+             // --- Participación Gastos Chart (Doughnut) ---
              destroyChart('participacionGastosChart');
              const ctxGastos = document.getElementById('participacionGastosChart')?.getContext('2d');
              // Filter labels based on *global* settings first, then check for > 0 value
@@ -1651,7 +1678,7 @@
 
              if (ctxGastos && gastoData.length > 0) {
                  window.participacionGastosChart_instance = new Chart(ctxGastos, {
-                     type: 'pie', // Changed to pie for variety, could be doughnut too
+                     type: 'doughnut', // Changed to doughnut
                      data: {
                          labels: gastoLabels,
                          datasets: [{
@@ -1661,12 +1688,12 @@
                              borderWidth: 2
                          }]
                      },
-                     options: pieChartOptions('Gasto Anual')
+                     options: pieChartOptions('Gasto Anual') // Use pie chart options (works for doughnut)
                  });
              }
 
 
-             // --- Participación Ingresos Chart (Pie) ---
+             // --- Participación Ingresos Chart (Doughnut) ---
              destroyChart('participacionIngresosChart');
              const ctxIngresos = document.getElementById('participacionIngresosChart')?.getContext('2d');
              // Filter labels based on *global* settings first, then check for > 0 value
@@ -1678,7 +1705,7 @@
 
              if (ctxIngresos && ingresoData.length > 0) {
                  window.participacionIngresosChart_instance = new Chart(ctxIngresos, {
-                     type: 'pie', // Changed to pie
+                     type: 'doughnut', // Changed to doughnut
                      data: {
                          labels: ingresoLabels,
                          datasets: [{
@@ -1689,7 +1716,7 @@
                              borderWidth: 2
                          }]
                      },
-                     options: pieChartOptions('Ingreso Anual')
+                     options: pieChartOptions('Ingreso Anual') // Use pie chart options
                  });
              }
          }
@@ -1726,7 +1753,11 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: textColor, boxWidth: 15, padding: 20 }
+                        labels: {
+                            color: textColor,
+                            boxWidth: 15,
+                            padding: 20
+                        }
                     },
                     tooltip: {
                         backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim(), 0.9),
@@ -1754,6 +1785,9 @@
              const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
              const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
              const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+             const baseFontSize = 16; // Assuming base font size from body/html
+             const legendFontSize = Math.round(baseFontSize * 1.3); // Increase by 30%
+
              return {
                  responsive: true,
                  maintainAspectRatio: false,
@@ -1761,7 +1795,12 @@
                      legend: {
                          position: 'right',
                          labels: {
-                            color: textColor, boxWidth: 15, padding: 15,
+                            color: textColor,
+                            boxWidth: 15,
+                            padding: 15,
+                            font: { // Apply font settings here
+                                 size: legendFontSize, // Apply increased size
+                            },
                              generateLabels: chart => {
                                 const data = chart.data;
                                 if (!data.labels.length || !data.datasets.length) return [];
@@ -1769,13 +1808,18 @@
                                 const total = dataset.data.reduce((a, b) => a + b, 0);
                                 return labels.map((label, i) => {
                                     const value = dataset.data[i];
-                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0.0%';
+                                     // --- MODIFICADO: Generate label text without dashed description ---
+                                     const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0.0%';
+                                     const textLabel = `${label} (${percentage})`; // Format: "Label (Percentage)"
+
                                     return {
-                                        text: `${label} (${percentage})`,
+                                        text: textLabel, // Use the custom text label
                                         fillStyle: dataset.backgroundColor[i],
                                         strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
                                         lineWidth: dataset.borderWidth || 0,
-                                        hidden: isNaN(value) || chart.getDataVisibility(i), index: i
+                                        // Note: Chart.js automatically handles hiding legend entries for hidden data
+                                        hidden: chart.getDataVisibility(i),
+                                        index: i
                                     };
                                 });
                              }
@@ -1787,18 +1831,19 @@
                          borderColor: borderColor, borderWidth: 1, padding: 10,
                          callbacks: {
                             label: context => {
-                                 let label = context.label || ''; if (label) label += ': ';
+                                 let label = context.label || ''; // context.label is the original label text
                                  if (context.parsed !== null) {
                                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                      const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) + '%' : '0.0%';
-                                     label += `${formatCurrency(context.parsed)} (${percentage})`;
+                                     // Show original label + formatted value and percentage in tooltip
+                                     label = `${label}: ${formatCurrency(context.parsed)} (${percentage})`;
                                  }
                                  return label;
                             }
                          }
                      }
                  },
-                 // cutout: '30%' // Optional: Makes it a Doughnut chart
+                 cutout: '30%' // Define cutout for Doughnut chart
              };
          }
 
@@ -2111,7 +2156,7 @@
                  input.onchange = (event) => {
                      const monthIndex = parseInt(event.target.dataset.month);
                      const value = parseFloat(event.target.value);
-                      if (monthIndex >= 0 && monthIndex < 12) {
+                      if (!isNaN(monthIndex) && monthIndex >= 0 && monthIndex < 12) { // Added NaN check
                           // Allow 0 and positive numbers
                           // Ensure the global array exists before writing
                           if (!Array.isArray(appState.settings.ipcManual) || appState.settings.ipcManual.length !== 12) {
@@ -2234,6 +2279,52 @@
              saveState(); // Save the changed collapsed preference
         }
 
+         // New function to toggle all rubro details for a given type
+         function toggleAllRubroDetails(type, collapse) {
+             console.log(`${collapse ? 'Colapsando' : 'Expandiendo'} todos los rubros de ${type}...`);
+             const scenarioData = getCurrentScenarioData();
+             if (!scenarioData) { showSnackbar("No hay escenario activo.", true, 'error'); return; }
+
+             const rubrosToToggle = appState.settings.rubros[type] || [];
+             let changesMade = false;
+
+             rubrosToToggle.forEach(rubro => {
+                 // Ensure config object exists before modifying
+                 if (!appState.settings.rubroConfig[rubro]) {
+                     appState.settings.rubroConfig[rubro] = { coefficientType: 'None', detailsCollapsed: true }; // Default collapsed
+                 }
+                 if ((appState.settings.rubroConfig[rubro].detailsCollapsed ?? true) !== collapse) { // Only change if different
+                      appState.settings.rubroConfig[rubro].detailsCollapsed = collapse;
+                      changesMade = true;
+                 }
+             });
+
+             if (changesMade) {
+                 saveState(); // Save the changed collapsed preferences
+                 // Update UI for the affected table directly
+                 const tableId = `${type}-detail-table`;
+                 const totalRows = document.querySelectorAll(`#${tableId} tr.rubro-total-row`);
+                 const detailRows = document.querySelectorAll(`#${tableId} tr.detail-row`);
+
+                 totalRows.forEach(row => {
+                     const rubro = row.dataset.rubro;
+                      const isCollapsed = appState.settings.rubroConfig[rubro]?.detailsCollapsed ?? true;
+                      row.classList.toggle('collapsed', isCollapsed);
+                 });
+
+                 detailRows.forEach(row => {
+                     const rubro = row.dataset.rubro;
+                      const isCollapsed = appState.settings.rubroConfig[rubro]?.detailsCollapsed ?? true;
+                      row.classList.toggle('hidden', isCollapsed);
+                 });
+
+                 showSnackbar(`${collapse ? 'Todos los detalles colapsados.' : 'Todos los detalles expandidos.'}`, false, 'info', 3000);
+             } else {
+                  showSnackbar(`Los detalles ya están ${collapse ? 'colapsados' : 'expandidos'}.`, false, 'info', 3000);
+             }
+         }
+
+
          function handleCoefficientAssignmentChange(event) {
              const select = event.target;
              const rubro = select.dataset.rubro;
@@ -2247,7 +2338,7 @@
                  appState.settings.rubroConfig[rubro].coefficientType = newCoefType;
                  console.log(`Coeficiente para "${rubro}" asignado a "${newCoefType}".`);
                  saveState(); // Save assignment immediately
-                  showSnackbar(`Coeficiente para "${rubro}" asignado. Guardar Configuración recalculará los estimados.`, false, 'info');
+                  showSnackbar(`Coeficiente para "${rubro}" asignado. Guardar Configuración recalculará los estimados.`, false, 'info', 3000);
              } else {
                   console.error("Error al asignar coeficiente: falta rubro o valor.", {rubro, newCoefType});
              }
@@ -2269,10 +2360,10 @@
                      appState.settings.coefficientTypes[typeKey].values[monthIndex] = newValue;
                      console.log(`Valor mes ${MONTHS[monthIndex]} para "${typeKey}" actualizado a ${newValue}.`);
                      saveState(); // Save immediately
-                     showSnackbar(`Valor para ${MONTHS[monthIndex]} de "${appState.settings.coefficientTypes[typeKey].name}" actualizado. Guardar Configuración recalculará.`, false, 'info');
+                     showSnackbar(`Valor para ${FULL_MONTHS[monthIndex]} de "${appState.settings.coefficientTypes[typeKey].name}" actualizado. Guardar Configuración recalculará.`, false, 'info', 3000);
                  } else {
                      input.value = appState.settings.coefficientTypes[typeKey].values[monthIndex]; // Revert invalid input
-                     showSnackbar(`Valor inválido para ${MONTHS[monthIndex]}. Debe ser >= 0.`, true, 'error');
+                     showSnackbar(`Valor inválido para ${FULL_MONTHS[monthIndex]}. Debe ser >= 0.`, true, 'error', 4000);
                  }
              } else {
                  console.error("Error al manejar cambio de valor de coeficiente.", { typeKey, monthIndex, newValue });
@@ -2592,7 +2683,11 @@
                 const mShortLower = mShort.toLowerCase();
                 // Allow full month name match as well (e.g., 'enero', 'febrero')
                 const fullMonthLower = FULL_MONTHS[MONTHS.indexOf(mShort)].toLowerCase();
-                return header.findIndex(h => h && (h.startsWith(mShortLower) || h === fullMonthLower));
+                 // Check for short name first, then full name, return the first match
+                 const shortIndex = header.findIndex(h => h && h.startsWith(mShortLower) && h.length <= mShortLower.length + 1); // Allow slight variations like "Ene."
+                 if (shortIndex !== -1) return shortIndex;
+                 const fullIndex = header.findIndex(h => h === fullMonthLower);
+                 return fullIndex;
             });
 
             const missingMonths = MONTHS.filter((_, i) => monthColIndices[i] === -1);
@@ -3005,7 +3100,7 @@
 
              const activeScenario = getCurrentScenarioData();
              if (activeScenario) {
-                 // Recalculate handles success message
+                 // Recalculate handles saveState and success message
                  calculateAll(activeScenario);
              } else {
                  updateUI(); // Just refresh lists if no active scenario
@@ -3083,10 +3178,10 @@
              const panel = document.getElementById('reserve-fund-panel');
              if (!panel) return;
 
-             const unitLabel = selectedType === 'percent' ? '%' : '$';
-             const newStep = selectedType === 'percent' ? '0.1' : '100';
+             const unitLabel = reserveFund.type === 'percent' ? '%' : '$';
+             const currentStep = reserveFund.type === 'percent' ? '0.1' : '100';
 
-             panel.querySelectorAll('input[type="number"]').forEach(input => input.step = newStep);
+             panel.querySelectorAll('input[type="number"]').forEach(input => input.step = currentStep);
              panel.querySelectorAll('.month-config span').forEach(span => span.textContent = unitLabel);
 
              console.log(`UI fondo reserva actualizada a tipo: ${selectedType}`);
@@ -3161,7 +3256,7 @@
                     });
                  });
                  const ingresosSheetData = createSheetData(`DETALLE INGRESOS (Valores Base) ${year} - ${scenarioName}`, ingresosHeaders, ingresosRows);
-                 const ws_ingresos = XLSX.utils.aoa_to_sheet(ingresosSheetData);
+                 const ws_ingresos = XLSX.utils.aoa_to_sheet(ws_ingresos_array);
                  ws_ingresos['!cols'] = [{wch:25},{wch:25}, ...Array(12).fill({wch:12}), {wch:14}];
                  ingresosRows.forEach((_, rowIndex) => {
                      for (let col = 2; col < 14 + 1; col++) { // Months + Total
