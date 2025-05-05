@@ -811,7 +811,7 @@
                      rubroOrder: { gastos: [], ingresos: [] },
                      data: { gastos: {}, ingresos: {} },
                      monthStatus: { gastos: {}, ingresos: {} },
-                     reserveFund: { type: 'percent', values: Array(12).fill(5) },
+                     reserveFund: { type: 'doughnut', values: Array(12).fill(5) },
                      calculated: {
                          gastoAjustado: {}, totalGastoRubroMes: {}, totalGastoProyectadoMes: Array(12).fill(0),
                          ingresoAjustado: {}, totalIngresoRubroMes: {}, totalIngresoProyectadoMes: Array(12).fill(0),
@@ -851,7 +851,7 @@
              scenarioData.rubroOrder = scenarioData.rubroOrder ?? { gastos: [], ingresos: [] };
              scenarioData.data = scenarioData.data ?? { gastos: {}, ingresos: {} };
              scenarioData.monthStatus = scenarioData.monthStatus ?? { gastos: {}, ingresos: {} };
-             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'percent', values: Array(12).fill(5) };
+             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'doughnut', values: Array(12).fill(5) };
              scenarioData.calculated = scenarioData.calculated ?? {}; // Ensure calculated object exists
              scenarioData.calculated.annualTotals = scenarioData.calculated.annualTotals ?? {}; // Ensure annualTotals object exists
 
@@ -1834,7 +1834,7 @@
                                         strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
                                         lineWidth: dataset.borderWidth || 0,
                                         // Note: Chart.js automatically handles hiding legend entries for hidden data
-                                        hidden: chart.getDataVisibility(i) || value === 0, // Hide if data is zero as well
+                                        hidden: chart.getDataVisibility(i), // Hide if data is zero as well
                                         index: i
                                     };
                                 });
@@ -2953,7 +2953,7 @@
              if (!scenarioData) { showSnackbar("No hay escenario activo.", true, 'error'); return; }
 
              // Ensure reserveFund object and values array exist
-             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'percent', values: Array(12).fill(5) };
+             scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'doughnut', values: Array(12).fill(5) };
              if (!Array.isArray(scenarioData.reserveFund.values) || scenarioData.reserveFund.values.length !== 12) {
                  scenarioData.reserveFund.values = Array(12).fill(scenarioData.reserveFund.type === 'percent' ? 5 : 0);
              }
