@@ -2128,63 +2128,71 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              }
         }
 
-        function renderCoefficientValuesEditor(typeKey) {
-             const editorDiv = document.getElementById('coefficient-values-editor');
-             const nameSpan = document.getElementById('editing-coefficient-name');
-             if (!editorDiv || !nameSpan) return;
-             editorDiv.innerHTML = '';
+        
+function renderCoefficientValuesEditor(typeKey) {
+    const editorDiv = document.getElementById('coefficient-values-editor');
+    const nameSpan  = document.getElementById('editing-coefficient-name');
+    if (!editorDiv || !nameSpan) return;
+    editorDiv.innerHTML = '';
 
-             if (!typeKey || !appState.settings.coefficientTypes[typeKey] || typeKey === 'None') {
-                 editorDiv.innerHTML = '<p class="text-muted">Selecciona un tipo de coeficiente de la lista (que no sea "Sin Coeficiente") para editar sus valores.</p>';
-                 nameSpan.textContent = 'Ninguno';
-                 appState.uiState.editingCoefficientType = null;
-                 return;
-             }
+    if (!typeKey || !appState.settings.coefficientTypes[typeKey] || typeKey === 'None') {
+        editorDiv.innerHTML = '<p class="text-muted">Selecciona un tipo de coeficiente para editar sus valores.</p>';
+        nameSpan.textContent = 'Ninguno';
+        appState.uiState.editingCoefficientType = null;
+        return;
+    }
 
-             const typeData = appState.settings.coefficientTypes[typeKey];
-             nameSpan.textContent = typeData.name;
+    const typeData = appState.settings.coefficientTypes[typeKey];
+    nameSpan.textContent = typeData.name;
 
-             const table = document.createElement('table');
-             table.style.width = '100%';
-             const thead = table.createTHead().insertRow();
-             const tbody = table.createTBody().insertRow();
+    // Crear tabla 12 meses
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    const thead = table.createTHead().insertRow();
+    const tbody = table.createTBody().insertRow();
 
-             // thead.insertCell().textContent = "Mes"; // Removed, using col headers
-             tbody.insertCell().textContent = "Valor Coef.";
-             tbody.cells[0].style.fontWeight = "600"; // Bold the row header
+    // Celda vacía para alinear con la cabecera lateral “Valor Coef.”
+    thead.insertCell().textContent = '';
+    tbody.insertCell().textContent = 'Valor Coef.';
+    tbody.cells[0].style.fontWeight = '600';
 
-             // Ensure values array exists and has 12 elements
-             const values = Array.isArray(typeData.values) && typeData.values.length === 12
-                             ? typeData.values
-                             : Array(12).fill(1);
+    const values = Array.isArray(typeData.values) && typeData.values.length === 12
+        ? typeData.values
+        : Array(12).fill(1);
 
+    MONTHS.forEach((month, index) => {
+        // Encabezado de mes
+        const th = thead.insertCell();
+        th.textContent = month;
+        th.classList.add('number-cell');
+        th.style.textAlign = 'center';
 
-             MONTHS.forEach((month, index) => {
-                 const th = thead.insertCell();
-                 th.textContent = month;
-                 th.classList.add('number-cell');
-                 th.style.textAlign = 'center';
+        // Celda de entrada
+        const td = tbody.insertCell();
+        td.classList.add('input-cell');
+        td.style.textAlign = 'center';
 
-                 const td = tbody.insertCell();
-                 td.classList.add('input-cell');
-                 td.style.textAlign = 'center';
+        const input = document.createElement('input');
+        input.type  = 'number';
+        input.step  = '0.1';
+        input.min   = '0';
+        input.style.maxWidth = '80px';
+        input.placeholder = '%';
 
-                 const input = document.createElement('input');
-                 input.type = 'number';
-                 input.step = '0.01';
-                 input.min = '0';
-                 input.value = values[index]; // Use validated array
-                 input.dataset.month = index;
-                 input.dataset.typeKey = typeKey;
-                 input.onchange = handleCoefficientValueChange;
-                 input.style.maxWidth = '80px';
-                 input.title = `Coeficiente para ${FULL_MONTHS[index]}`;
+        // Mostrar como porcentaje: (1.04 -> 4.0)  (1 -> 0)
+        input.value = ((values[index] ?? 1) - 1) * 100;
 
-                 td.appendChild(input);
-             });
+        input.dataset.month   = index;
+        input.dataset.typeKey = typeKey;
+        input.addEventListener('change', handleCoefficientValueChange);
 
-             editorDiv.appendChild(table);
-        }
+        input.title = `Coeficiente para ${FULL_MONTHS[index]}`;
+        td.appendChild(input);
+    });
+
+    editorDiv.appendChild(table);
+}
+
 
         function updateIPCManualInputs() {
              const ipcDiv = document.getElementById('ipc-inputs');
@@ -2407,31 +2415,41 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              }
          }
 
-         function handleCoefficientValueChange(event) {
-             const input = event.target;
-             const monthIndex = parseInt(input.dataset.month);
-             const typeKey = input.dataset.typeKey;
-             const newValue = parseFloat(input.value);
+         
+function handleCoefficientValueChange(event) {
+    const input      = event.target;
+    const monthIndex = parseInt(input.dataset.month);
+    const typeKey    = input.dataset.typeKey;
+    const percent    = parseFloat(input.value); // valor que escribe el usuario (0‑100)
 
-             if (typeKey && appState.settings.coefficientTypes[typeKey] && !isNaN(monthIndex) && monthIndex >= 0 && monthIndex < 12) {
-                 // Ensure values array exists before modifying
-                 if (!Array.isArray(appState.settings.coefficientTypes[typeKey].values) || appState.settings.coefficientTypes[typeKey].values.length !== 12) {
-                    appState.settings.coefficientTypes[typeKey].values = Array(12).fill(1);
-                 }
+    if (!typeKey || isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11 ||
+        !appState.settings.coefficientTypes[typeKey]) {
+        console.error('Datos de entrada inválidos para la actualización del coeficiente');
+        return;
+    }
 
-                 if (!isNaN(newValue) && newValue >= 0) {
-                     appState.settings.coefficientTypes[typeKey].values[monthIndex] = newValue;
-                     console.log(`Valor mes ${MONTHS[monthIndex]} para "${typeKey}" actualizado a ${newValue}.`);
-                     saveState(); // Save immediately
-                     showSnackbar(`Valor para ${FULL_MONTHS[monthIndex]} de "${appState.settings.coefficientTypes[typeKey].name}" actualizado. Guardar Configuración recalculará.`, false, 'info', 3000);
-                 } else {
-                     input.value = appState.settings.coefficientTypes[typeKey].values[monthIndex]; // Revert invalid input
-                     showSnackbar(`Valor inválido para ${FULL_MONTHS[monthIndex]}. Debe ser >= 0.`, true, 'error', 4000);
-                 }
-             } else {
-                 console.error("Error al manejar cambio de valor de coeficiente.", { typeKey, monthIndex, newValue });
-             }
-         }
+    // Asegurar array de 12 posiciones
+    if (!Array.isArray(appState.settings.coefficientTypes[typeKey].values) ||
+        appState.settings.coefficientTypes[typeKey].values.length !== 12) {
+        appState.settings.coefficientTypes[typeKey].values = Array(12).fill(1);
+    }
+
+    if (isNaN(percent) || percent < 0) {
+        showSnackbar('Debe ingresar un porcentaje válido (≥ 0).', true, 'error', 4000);
+        // Restaurar valor visual anterior
+        const stored = appState.settings.coefficientTypes[typeKey].values[monthIndex];
+        input.value  = (stored - 1) * 100;
+        return;
+    }
+
+    // Guardar como multiplicador interno 1 + p/100
+    const multiplier = 1 + percent / 100;
+    appState.settings.coefficientTypes[typeKey].values[monthIndex] = multiplier;
+
+    saveState();
+    showSnackbar(\`Coeficiente para \${FULL_MONTHS[monthIndex]} actualizado a \${percent}%\`, false, 'info', 2500);
+}
+
 
 
         // --- Funciones de Acción (Botones, etc.) ---
