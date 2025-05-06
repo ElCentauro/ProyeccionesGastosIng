@@ -764,7 +764,16 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             addEventListeners(); // Añadir listeners globales
             updateUI(); // Renderizar todo con el estado actual/cargado
             console.log(`App ${STORAGE_KEY} Inicializada.`);
-        });
+        }
+                // ---- NUEVO: Capturar valor base para Expensa Real (después de multiplicación) ----
+                if (rubro && rubro.toString().toLowerCase().trim() === CUOTA_RUBRO_NAME.toLowerCase()) {
+                    for (let i = 0; i < 12; i++) {
+                        calculated.cuotaRealBaseMes[i] = calculated.totalIngresoRubroMes[rubro][i];
+                    }
+                    calculated.annualTotals.cuotaRealBase = calculated.cuotaRealBaseMes.reduce((a,b)=>a+b,0);
+                }
+                // ---- FIN NUEVO ----
+);
 
         // --- Validación y Selección de Escenario Activo ---
         function validateAndSetActiveScenario() {
@@ -1941,7 +1950,6 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  input.value = reserveValues[i]; // Use validated array
                  input.step = currentStep;
                  input.min = '0';
-                  input.placeholder = '%';
                  input.style.textAlign = 'right';
 
                  const unitSpan = document.createElement('span');
@@ -2141,8 +2149,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const thead = table.createTHead().insertRow();
              const tbody = table.createTBody().insertRow();
 
-            
-             thead.insertCell().textContent = ""; // Blank to align with row header
+             // thead.insertCell().textContent = "Mes"; // Removed, using col headers
              tbody.insertCell().textContent = "Valor Coef.";
              tbody.cells[0].style.fontWeight = "600"; // Bold the row header
 
@@ -2164,10 +2171,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
                  const input = document.createElement('input');
                  input.type = 'number';
-                 input.step = '0.1';
+                 input.step = '0.01';
                  input.min = '0';
-                  input.placeholder = '%';
-                 input.value = ((values[index] || 1) - 1) * 100; // Use validated array
+                 input.value = values[index]; // Use validated array
                  input.dataset.month = index;
                  input.dataset.typeKey = typeKey;
                  input.onchange = handleCoefficientValueChange;
@@ -2204,8 +2210,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  input.dataset.month = i;
                  input.value = ipcValues[i]; // Use validated array
                  input.step = '0.1';
-                 input.min = '0';
-                  input.placeholder = '%'; // Allow zero IPC
+                 input.min = '0'; // Allow zero IPC
                  input.placeholder = '%';
                  input.style.textAlign = 'right';
                  input.style.maxWidth = '120px';
@@ -2406,7 +2411,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const input = event.target;
              const monthIndex = parseInt(input.dataset.month);
              const typeKey = input.dataset.typeKey;
-             const percent = parseFloat(input.value);
+             const newValue = parseFloat(input.value);
 
              if (typeKey && appState.settings.coefficientTypes[typeKey] && !isNaN(monthIndex) && monthIndex >= 0 && monthIndex < 12) {
                  // Ensure values array exists before modifying
@@ -2414,17 +2419,17 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                     appState.settings.coefficientTypes[typeKey].values = Array(12).fill(1);
                  }
 
-                 if (!isNaN(percent) && percent >= 0) {
-                     appState.settings.coefficientTypes[typeKey].values[monthIndex] = 1 + percent / 100;
-                     console.log(`Valor mes ${MONTHS[monthIndex]} para "${typeKey}" actualizado a ${percent}.`);
+                 if (!isNaN(newValue) && newValue >= 0) {
+                     appState.settings.coefficientTypes[typeKey].values[monthIndex] = newValue;
+                     console.log(`Valor mes ${MONTHS[monthIndex]} para "${typeKey}" actualizado a ${newValue}.`);
                      saveState(); // Save immediately
-                     showSnackbar(`Valor actualizado`, false);
+                     showSnackbar(`Valor para ${FULL_MONTHS[monthIndex]} de "${appState.settings.coefficientTypes[typeKey].name}" actualizado. Guardar Configuración recalculará.`, false, 'info', 3000);
                  } else {
                      input.value = appState.settings.coefficientTypes[typeKey].values[monthIndex]; // Revert invalid input
                      showSnackbar(`Valor inválido para ${FULL_MONTHS[monthIndex]}. Debe ser >= 0.`, true, 'error', 4000);
                  }
              } else {
-                 console.error("Error al manejar cambio de valor de coeficiente.", { typeKey, monthIndex, percent });
+                 console.error("Error al manejar cambio de valor de coeficiente.", { typeKey, monthIndex, newValue });
              }
          }
 
