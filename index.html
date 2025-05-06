@@ -3698,7 +3698,7 @@ function handleCoefficientValueChange(event) {
         // --- Funciones Adicionales o de UI ---
         function updateReportsPanel() {
              const scenarioData = getCurrentScenarioData();
-             const hasCalculatedData = scenarioData?.calculated && (
+const hasCalculatedData = scenarioData?.calculated && true;
                 (scenarioData.calculated.totalGastoProyectadoMes?.some(v => v !== 0) ?? false) ||
                 (scenarioData.calculated.totalIngresoProyectadoMes?.some(v => v !== 0) ?? false)
              );
