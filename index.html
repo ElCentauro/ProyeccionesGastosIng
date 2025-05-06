@@ -763,7 +763,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             initUI(); // Inicializar elementos de la UI que dependen del estado inicial
             addEventListeners(); // Añadir listeners globales
             updateUI(); // Renderizar todo con el estado actual/cargado
-            console.log(`App ${STORAGE_KEY} Inicializada.`);
+            console.log(`App ${STORAGE_KEY} Inicializada`); // ← sin punto dentro del template
         }
                 // ---- NUEVO: Capturar valor base para Expensa Real (después de multiplicación) ----
                 if (rubro && rubro.toString().toLowerCase().trim() === CUOTA_RUBRO_NAME.toLowerCase()) {
