@@ -988,6 +988,18 @@ function loadState() {
 }
 
 
+
+// --- Simulación de función loadState para evitar el ReferenceError ---
+function loadState() {
+    console.warn("Función 'loadState' aún no implementada. Esta es una versión placeholder.");
+}
+
+// --- Simulación de función initTheme para evitar el ReferenceError ---
+function initTheme() {
+    console.warn("Función 'initTheme' aún no implementada. Esta es una versión placeholder.");
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
             console.log(`DOM Cargado. Inicializando App ${STORAGE_KEY}...`);
             // Load application state from localStorage. This also performs data migration if needed.
