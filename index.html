@@ -1115,7 +1115,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
                  if (SPECIAL_INGRESO_RUBROS.includes(rubro)) {
                      for (let i = 0; i < 12; i++) {
-                         calculated.totalIngresoRubroMes[rubro][i] /= unidades;
+                         calculated.totalIngresoRubroMes[rubro][i] *= unidades;
                      }
                  }
 
