@@ -981,7 +981,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
         // --- DOMContentLoaded Initialization ---
         // This code runs AFTER the entire HTML document is loaded and parsed.
-        document.addEventListener('DOMContentLoaded', () => {
+        
+// --- Simulación de función loadState para evitar el ReferenceError ---
+function loadState() {
+    console.warn("Función 'loadState' aún no implementada. Esta es una versión placeholder.");
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
             console.log(`DOM Cargado. Inicializando App ${STORAGE_KEY}...`);
             // Load application state from localStorage. This also performs data migration if needed.
             loadState();
