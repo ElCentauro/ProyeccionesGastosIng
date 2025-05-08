@@ -723,7 +723,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              <div class="config-section">
                  <h4><i class="fas fa-chart-line"></i> Índices IPC Mensuales de Referencia (%)</h4>
-                 <p class="text-muted">Introduce el porcentaje (%) de IPC estimado o real para cada mes. Se usa únicamente para calcular la columna "Cuota IPC ($/UF)" como referencia en el Dashboard.</p>
+                 <p class="text-muted">Introduce el porcentaje (%) de IPC estimado o real para cada mes. Se usa únicamente para calcular la columna "Cuota IPC ($/UF)" como referencia en el Dashboard y está disponible como tipo de coeficiente ("IPC").</p> <!-- MODIFICACIÓN FIX: Clarify IPC usage -->
                  <div id="ipc-inputs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px;">
                      <!-- Inputs generados por JS -->
                  </div>
@@ -967,7 +967,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              scenarioData.calculated = scenarioData.calculated ?? {}; // Ensure calculated object exists
              // Ensure default calculated arrays/objects exist if missing
-             const defaultCalcStructure = getDefaultAppState().scenarios.BaseExample?.calculated || {
+             const defaultCalcStructure = getDefaultAppState().BaseScenarioStructureTemplate?.calculated || { // Use template structure
                   gastoAjustado: {}, totalGastoRubroMes: {}, totalGastoProyectadoMes: Array(12).fill(0),
                   ingresoAjustado: {}, totalIngresoRubroMes: {}, totalIngresoProyectadoMes: Array(12).fill(0),
                   fondoReservaMes: Array(12).fill(0), cuotaSobreGastosMes: Array(12).fill(0),
@@ -1139,53 +1139,26 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  calculated.totalGastoRubroMes[rubro] = Array(12).fill(0);
                  calculated.annualTotals.gastos[rubro] = 0;
 
-                 const config = rubroConfig[rubro] || {};
-                 const coefTypeKey = config.coefficientType || 'None';
-                 // Get coefficient values (percentages). Ensure it's an array of 12 numbers.
-                  // --- MODIFICACIÓN FIX: Ensure coefValues is a valid array of 12 numbers (percentages) ---
-                 const coefValuesRaw = coefficientTypes[coefTypeKey]?.values;
-                 const coefPercentages = (Array.isArray(coefValuesRaw) && coefValuesRaw.length === 12)
-                                         ? coefValuesRaw.map(v => parseFloat(v || 0))
-                                         : Array(12).fill(0); // Default to 0% increase
-                 // --- END MODIFICACIÓN FIX ---
-
 
                  // Use scenario-specific detail order if available, otherwise process all in data
                  const detailOrder = (Array.isArray(data.gastos[rubro].detailOrder) && data.gastos[rubro].detailOrder.length > 0
                                      ? data.gastos[rubro].detailOrder
                                      : Object.keys(data.gastos[rubro].detailsData || {}))
-                                     .filter(detail => data.gastos[rubro].detailsData[detail] !== undefined); // Ensure detail data exists
+                                     .filter(detail => data.gastos[rubro].detailsData[detail] !== undefined && Array.isArray(data.gastos[rubro].detailsData[detail]) && data.gastos[rubro].detailsData[detail].length === 12); // Ensure valid detail data array
+
 
                  detailOrder.forEach(detail => {
-                      // Ensure data and status arrays exist before accessing them
-                    const baseValues = Array.isArray(data.gastos[rubro].detailsData[detail]) && data.gastos[rubro].detailsData[detail].length === 12
+                      // Use the values directly from the source data, which has been populated by load or recalculateEstimates
+                    const finalDetailValues = Array.isArray(data.gastos[rubro].detailsData[detail]) && data.gastos[rubro].detailsData[detail].length === 12
                                        ? data.gastos[rubro].detailsData[detail].map(v => parseFloat(v || 0))
                                        : Array(12).fill(0);
 
-                    const statusArray = (monthStatus.gastos && monthStatus.gastos[rubro] && Array.isArray(monthStatus.gastos[rubro][detail]) && monthStatus.gastos[rubro][detail].length === 12)
-                                         ? monthStatus.gastos[rubro][detail]
-                                         : Array(12).fill('Estimado'); // Default to Estimado if no status or invalid
+                     calculated.gastoAjustado[rubro][detail] = finalDetailValues; // Store the final values for display
 
-                     calculated.gastoAjustado[rubro][detail] = Array(12).fill(0); // Initialize adjusted array for detail
-
-                     // The `calculated.gastoAjustado` array for a detail should directly store the final value for each month:
-                     // - The loaded value if the month is REAL.
-                     // - The *projected* value if the month is ESTIMADO *after* the last REAL month (this is handled by `recalculateEstimates`).
-                     // - The loaded value (likely 0) if the month is ESTIMADO *before* the first REAL month.
-                     // So, in `calculateAll`, we just use the values already placed in `data.gastos[rubro].detailsData[detail]` by the load or recalculateEstimates process.
-
-                     const finalDetailValues = Array(12).fill(0); // Array to store final values for this detail
-
+                     // Add to monthly total for the rubro using this final value
                      for (let i = 0; i < 12; i++) {
-                          // Use the value directly from the source data, which has been populated by load or recalculateEstimates
-                          finalDetailValues[i] = baseValues[i]; // baseValues is derived from scenarioData.data here
-
-                          // Add to monthly total for the rubro using this final value
                           calculated.totalGastoRubroMes[rubro][i] += finalDetailValues[i];
                      }
-                     calculated.gastoAjustado[rubro][detail] = finalDetailValues; // Store the final values
-
-
                  });
 
                  // Sum monthly totals for the rubro to overall monthly/annual totals
@@ -1222,7 +1195,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  const detailOrder = (Array.isArray(data.ingresos[rubro].detailOrder) && data.ingresos[rubro].detailOrder.length > 0
                                      ? data.ingresos[rubro].detailOrder
                                      : Object.keys(data.ingresos[rubro].detailsData || {}))
-                                     .filter(detail => data.ingresos[rubro].detailsData[detail] !== undefined); // Ensure detail data exists
+                                     .filter(detail => data.ingresos[rubro].detailsData[detail] !== undefined && Array.isArray(data.ingresos[rubro].detailsData[detail]) && data.ingresos[rubro].detailsData[detail].length === 12); // Ensure valid detail data array
 
 
                  detailOrder.forEach(detail => {
@@ -1345,8 +1318,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             const { rubros, rubroConfig, coefficientTypes } = settings;
             let changesMade = false;
              let projectedCount = 0;
-             let rubrosProjected = 0;
-             let detailsProjected = 0;
+             let detailsWithProjection = 0;
 
 
             // Ensure rubroOrder.gastos exists and is an array, filter by global settings
@@ -1354,14 +1326,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                                           .filter(rubro => settings.rubros.gastos.includes(rubro));
 
             if (gastoRubrosToProcess.length === 0) {
-                 showSnackbar("No hay rubros de gasto definidos para proyectar.", false, 'info');
+                 showSnackbar("No hay rubros de gasto definidos para proyectar.", false, 'info', 3000);
                  return;
             }
 
             gastoRubrosToProcess.forEach(rubro => {
                 if (!data.gastos || !data.gastos[rubro]) return; // Skip if rubro data missing
 
-                // Ensure detailOrder exists and is an array, filter by data existence
+                // Ensure detailOrder exists and is an array, filter by data existence and validity
                 const detailOrder = (Array.isArray(data.gastos[rubro].detailOrder) ? data.gastos[rubro].detailOrder : [])
                                      .filter(detail => data.gastos[rubro].detailsData[detail] !== undefined && Array.isArray(data.gastos[rubro].detailsData[detail]) && data.gastos[rubro].detailsData[detail].length === 12); // Ensure valid detail data array
 
@@ -1370,18 +1342,29 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      return; // Skip if no details with valid data
                  }
 
-                 rubrosProjected++;
-
                 const rubroCoefConfig = rubroConfig[rubro] || {};
                 const coefTypeKey = rubroCoefConfig.coefficientType || 'None';
                 const currentCoefficientType = coefficientTypes[coefTypeKey];
-                 // Get coefficient values (percentages). Ensure it's an array of 12 numbers.
-                 // --- MODIFICACIÓN FIX: Ensure coefValues is a valid array of 12 numbers (percentages) ---
-                const coefValuesRaw = currentCoefficientType?.values;
-                const coefPercentages = (Array.isArray(coefValuesRaw) && coefValuesRaw.length === 12)
-                                        ? coefValuesRaw.map(v => parseFloat(v || 0))
-                                        : Array(12).fill(0); // Default to 0% increase
-                // --- END MODIFICACIÓN FIX ---
+
+                 // Get coefficient values (percentages) or multiplier (for 'None'). Ensure it's an array of 12 numbers.
+                 // --- MODIFICACIÓN FIX: Handle 'None' (multiplier 1) vs other types (percentages) ---
+                 const coefValuesRaw = currentCoefficientType?.values;
+                 const monthlyMultipliers = Array(12).fill(1); // Default multiplier is 1 (no change)
+
+                 if (coefTypeKey === 'None') {
+                     // Already filled with 1s
+                 } else if (Array.isArray(coefValuesRaw) && coefValuesRaw.length === 12) {
+                      // Convert percentages to multipliers
+                      for(let i = 0; i < 12; i++) {
+                           const percentage = parseFloat(coefValuesRaw[i] || 0);
+                           monthlyMultipliers[i] = 1 + percentage / 100;
+                      }
+                 } else {
+                      console.warn(`Coef type "${coefTypeKey}" values array invalid. Using 0% (multiplier 1) for projection.`);
+                     // monthlyMultipliers already filled with 1s (0% increase)
+                 }
+                 // --- END MODIFICACIÓN FIX ---
+
 
                 detailOrder.forEach(detail => {
                     // Ensure data and status arrays exist before accessing them
@@ -1407,7 +1390,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                          return; // Skip projection if no REAL month found or the last REAL is Dec
                     }
 
-                     detailsProjected++;
+                     detailsWithProjection++;
 
                     // Start projecting from the month *after* the last REAL month
                     let previousMonthValue = currentDataValues[lastRealMonthIndex]; // Base value from the last REAL month
@@ -1416,11 +1399,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                         // Only project if the current month 'j' is marked as 'Estimado'
                         // This handles cases where there might be a REAL month *after* the last overall REAL month.
                         if (currentStatuses[j] === 'Estimado') {
-                             // Get the percentage coefficient for month 'j'
-                             // --- MODIFICACIÓN FIX: Use percentage coefficient ---
-                            const percentage = coefPercentages[j];
-                            const multiplier = 1 + percentage / 100;
-                            // --- END MODIFICACIÓN FIX ---
+                             // Get the multiplier for month 'j'
+                             const multiplier = monthlyMultipliers[j];
 
                             // Accumulative calculation: multiply the PREVIOUS month's value by the CURRENT month's multiplier
                             const projectedValue = previousMonthValue * multiplier;
@@ -1437,39 +1417,26 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                             previousMonthValue = projectedValue;
                         } else {
                             // If the current month 'j' is REAL (e.g., there was a number in Excel later),
-                            // the projection stops for this detail at this point. The value from Excel is kept.
+                            // the projection chain stops for this detail at this point. The value from Excel is kept.
                             // The 'previousMonthValue' for the *next* estimated month should become this new REAL value.
-                             previousMonthValue = currentDataValues[j]; // Use the actual value from the data for the next step
+                             previousMonthValue = currentDataValues[j]; // Use the actual value from the data array for the next iteration's base.
                             // console.log(`     * ${MONTHS[j]} (${rubro}/${detail}): Mes REAL. Deteniendo proyección acumulativa para este detalle aquí.`);
-                             // Continue the loop to potentially pick up a new REAL month, but the cumulative projection chain is broken until the *next* ESTIMADO month after this REAL one.
-                             // However, the current logic projects *all* estimated months after the LAST REAL month. If there's a REAL month mid-projection,
-                             // recalculateEstimates should probably stop projecting from the previous REAL and, if there are *further* ESTIMATED months after this new REAL one,
-                             // it should ideally start a *new* projection chain from *this* new REAL month.
-                             // Let's adjust the logic: Find the LAST REAL month overall *first*, then project all months after it that are ESTIMATED.
-
-                             // REVISED Logic: Find LAST REAL month overall, then project ALL subsequent ESTIMADO months from that point.
-                             // The current inner loop already does this implicitly by checking `currentStatuses[j] === 'Estimado'`.
-                             // Let's ensure the `previousMonthValue` correctly takes the value from the data *if* the month was REAL.
-
-                              // If month 'j' is REAL, the base for the *next* month's projection (if it's Estimated) should be the value from month 'j'.
-                              // If month 'j' is Estimated, the base for the *next* month's projection should be the projected value calculated for month 'j'.
-                              // So, `previousMonthValue` should always be updated with the final determined value for month 'j'.
-                              previousMonthValue = data.gastos[rubro].detailsData[detail][j]; // Use the value from the data array for the next iteration's base.
-                              // This value is either the original loaded value (if REAL or ESTIMATED loaded) or the projected value (if just calculated).
-
+                             // We don't break the loop here, as there might be more Estimated months later,
+                             // but the base for any *future* projection would restart from this new REAL value.
+                             // The current logic correctly handles this by updating `previousMonthValue`.
                         }
                     }
                 });
             });
 
-             if (rubrosProjected === 0) {
-                 showSnackbar("No se encontraron rubros de gasto con datos reales para proyectar.", false, 'info');
+             if (detailsWithProjection === 0) {
+                 showSnackbar("No se encontraron detalles de gastos con datos reales para proyectar.", false, 'info', 3000);
                  return;
              }
 
 
             if (changesMade) {
-                console.log(`Se proyectaron ${projectedCount} celdas en ${detailsProjected} detalles de ${rubrosProjected} rubros. Recalculando todo...`);
+                console.log(`Se proyectaron ${projectedCount} celdas en ${detailsWithProjection} detalles. Recalculando todo...`);
                 showSnackbar(`Meses estimados recalculados (${projectedCount} celdas). Actualizando dashboard...`, false, 'info', 4000);
                 calculateAll(scenarioData); // Recalculate everything after projections
             } else {
@@ -1803,7 +1770,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  const rubroData = data[type][rubro];
                  // --- FIX: Use scenario-specific detail order, filter by data existence ---
                  const orderedDetails = (Array.isArray(rubroData.detailOrder) ? rubroData.detailOrder : [])
-                                     .filter(detail => rubroData.detailsData?.[detail] !== undefined);
+                                     .filter(detail => rubroData.detailsData?.[detail] !== undefined && Array.isArray(rubroData.detailsData[detail]) && rubroData.detailsData[detail].length === 12); // Ensure valid detail data array
 
                  // Only add the rubro row if there are details with data
                  if (orderedDetails.length === 0) return;
@@ -2238,15 +2205,18 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
             updateCoefficientTypeList();
             const currentEditing = appState.uiState.editingCoefficientType;
-            if (currentEditing && appState.settings.coefficientTypes?.[currentEditing] && !appState.settings.coefficientTypes[currentEditing].isDefault) { // Only try to render editor for non-default types
+            const editingTypeData = appState.settings.coefficientTypes?.[currentEditing];
+             // Only try to render editor if a type is selected, it exists, and is NOT a default type
+            if (currentEditing && editingTypeData && !editingTypeData.isDefault) {
                 renderCoefficientValuesEditor(currentEditing);
             } else {
                 const editorDiv = document.getElementById('coefficient-values-editor');
                 const nameSpan = document.getElementById('editing-coefficient-name');
                 if (editorDiv) editorDiv.innerHTML = '<p class="text-muted">Selecciona un tipo de coeficiente (que no sea "Sin Coeficiente") de la lista de la izquierda para editar sus valores porcentuales (%) mes a mes.</p>';
                 if (nameSpan) nameSpan.textContent = 'Ninguno';
-                if(appState.uiState.editingCoefficientType !== null && (!appState.settings.coefficientTypes?.[appState.uiState.editingCoefficientType] || appState.settings.coefficientTypes[appState.uiState.editingCoefficientType].isDefault)) {
-                   appState.uiState.editingCoefficientType = null; // Reset if type became invalid or is default
+                // If the current editing type is invalid or became default, clear the state
+                if(appState.uiState.editingCoefficientType !== null && (!editingTypeData || editingTypeData.isDefault)) {
+                   appState.uiState.editingCoefficientType = null;
                    updateCoefficientTypeList(); // Update list to remove highlight
                 }
             }
@@ -2388,7 +2358,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         function selectCoefficientTypeForEditing(typeKey) {
              const typeData = appState.settings.coefficientTypes?.[typeKey]; // Check if type exists
              if (!typeData || typeKey === 'None' || typeData.isDefault) {
-                showSnackbar(`El tipo "${typeData?.name || typeKey}" no es editable.`, false, 'info', 3000);
+                showSnackbar(`El tipo "${typeData?.name || typeKey}" no es editable. Sus valores se gestionan en otra sección o no son modificables.`, false, 'info', 5000); // More specific message
                 appState.uiState.editingCoefficientType = null; // Ensure non-editable types are not the editing type
                  renderCoefficientValuesEditor(null); // Clear the editor
                 updateCoefficientTypeList(); // Update list appearance
@@ -2670,14 +2640,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
          function toggleAllRubroDetails(type, collapse) {
              console.log(`${collapse ? 'Colapsando' : 'Expandiendo'} todos los rubros de ${type}...`);
              const scenarioData = getCurrentScenarioData();
-             if (!scenarioData) { showSnackbar("No hay escenario activo.", true, 'error'); return; }
+             if (!scenarioData) { showSnackbar("No hay escenario activo.", true, 'error', 4000); return; }
 
              // Get the actual rubros displayed in the table, as they are filtered by data existence
               const tableId = `${type}-detail-table`;
               const displayedRubros = Array.from(document.querySelectorAll(`#${tableId} tr.rubro-total-row`)).map(row => row.dataset.rubro);
 
              if (displayedRubros.length === 0) {
-                  showSnackbar(`No hay rubros de ${type} con datos para expandir/colapsar.`, false, 'info');
+                  showSnackbar(`No hay rubros de ${type} con datos para expandir/colapsar.`, false, 'info', 3000);
                   return;
              }
 
@@ -2768,7 +2738,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              if (selector) selector.value = appState.activeScenarioKey;
 
              updateUI(); // Refresh UI for the new/selected year
-             showSnackbar(`Ejercicio ${inputYear} (Escenario Base) seleccionado/creado.`, false, 'success');
+             showSnackbar(`Ejercicio ${inputYear} (Escenario Base) seleccionado/creado.`, false, 'success', 3000);
         }
 
         function createScenario(){
@@ -2798,7 +2768,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const selector = document.getElementById('scenario-selector');
              if(selector) selector.value = key;
              updateUI();
-             showSnackbar(`Escenario "${nombre}" creado y seleccionado.`, false, 'success');
+             showSnackbar(`Escenario "${nombre}" creado y seleccionado.`, false, 'success', 3000);
         }
 
         function cloneScenario() {
@@ -2838,7 +2808,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const selector = document.getElementById('scenario-selector');
              if(selector) selector.value = newKey;
              updateUI();
-             showSnackbar(`Escenario "${trimmedNewName}" clonado y seleccionado.`, false, 'success');
+             showSnackbar(`Escenario "${trimmedNewName}" clonado y seleccionado.`, false, 'success', 3000);
         }
 
         function deleteScenario() {
@@ -2896,7 +2866,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  const selector = document.getElementById('scenario-selector');
                  if (selector && appState.activeScenarioKey) selector.value = appState.activeScenarioKey;
                  updateUI();
-                 showSnackbar(`Escenario "${deletedName}" eliminado.`, false, 'success');
+                 showSnackbar(`Escenario "${deletedName}" eliminado.`, false, 'success', 3000);
              } else {
                  showSnackbar("Eliminación cancelada.", false, 'info', 3000);
              }
@@ -3038,7 +3008,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
                      // Recalculate everything after processing the data
                      calculateAll(scenarioData); // This also saves state and updates UI
-                     showSnackbar("Datos del Excel cargados y procesados.", false, 'success');
+                     showSnackbar("Datos del Excel cargados y procesados.", false, 'success', 3000);
 
                  } catch (error) {
                      console.error("Error procesando archivo Excel:", error);
@@ -3313,7 +3283,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
             // Recalculate with sample data
             calculateAll(scenarioData); // This also saves state & updates UI
-            showSnackbar("Datos de ejemplo cargados y procesados.", false, 'success');
+            showSnackbar("Datos de ejemplo cargados y procesados.", false, 'success', 3000);
          }
 
         function downloadTemplate() {
@@ -3347,7 +3317,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              XLSX.utils.book_append_sheet(wb, ws_ingresos, INGRESOS_SHEET_NAME);
 
              XLSX.writeFile(wb, `Plantilla_Expensas_${year}.xlsx`);
-             showSnackbar("Plantilla de ejemplo descargada.", false, 'success');
+             showSnackbar("Plantilla de ejemplo descargada.", false, 'success', 3000);
         }
 
         function saveReserveFund() {
@@ -3990,7 +3960,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  // --- Write File ---
                  const filename = `Reporte_Expensas_${year}_${scenarioName.replace(/\s+/g, '_').replace(/[^\w-]/g, '')}.xlsx`; // Sanitize filename
                  XLSX.writeFile(wb, filename);
-                 showSnackbar("Reporte Excel generado.", false, 'success');
+                 showSnackbar("Reporte Excel generado.", false, 'success', 3000);
 
              } catch (error) {
                   console.error("Error exportando a Excel:", error);
@@ -4028,7 +3998,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      document.body.appendChild(link);
                      link.click();
                      document.body.removeChild(link);
-                     showSnackbar(`Gráfico "${filename}" exportado como PNG.`, false, 'success');
+                     showSnackbar(`Gráfico "${filename}" exportado como PNG.`, false, 'success', 3000);
                     });
                  });
              } catch (e) {
@@ -4221,9 +4191,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      rubroConfig: {}, // Stores coefficientType assignment and collapsed state per rubro (global setting)
                      coefficientTypes: {
                          "None": { name: "Sin Coeficiente", values: Array(12).fill(1), isDefault: true }, // Multiplier 1
-                         "IPC": { name: "IPC (Ejemplo)", values: [5, 4, 6, 3, 4, 5, 3, 4, 5, 6, 4, 5], isDefault: true }, // Percentages
+                         "IPC": { name: "IPC", values: Array(12).fill(0), isDefault: true }, // Percentage (Will be synced with ipcManual on load/save)
                          "UTEDYC": { name: "UTEDYC (Ejemplo)", values: [0, 0, 10, 0, 0, 8, 0, 0, 7, 0, 0, 5], isDefault: true }, // Percentages
-                         "Sueldos": { name: "Sueldos Generales", values: [0, 0, 8, 0, 0, 6, 0, 0, 5, 0, 0, 4], isDefault: false } // Percentages
+                         "Sueldos": { name: "Sueldos Generales", values: [0, 0, 8, 0, 0, 6, 0, 0, 5, 0, 0, 4], isDefault: false } // Percentages (Editable)
                      },
                      ipcManual: [5, 4, 6, 3, 4, 5, 3, 4, 5, 6, 4, 5] // Default IPC ref values (%)
                  },
@@ -4286,6 +4256,19 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              // Reset data, keep reserve fund, rubro config, and calculated ipc snapshot
              scenario.rubroOrder = { gastos: [], ingresos: [] };
              scenario.data = { gastos: {}, ingresos: {} };
+             scenario.monthStatus = { gastos: {}, ingresos: {} };
+        function clearScenarioData() {
+             const key = appState.activeScenarioKey;
+             const scenario = appState.scenarios?.[key]; // Check if scenario exists
+             if (!scenario) { showSnackbar('No hay escenario activo.', true, 'error', 4000); return; }
+
+             if (!confirm(`¿Borrar TODOS los datos (gastos, ingresos, estado meses) del escenario "${scenario.scenarioName}"?\n\nLa Configuración de Fondo de Reserva y la asignación de Coeficientes se mantendrán.\n¡No se puede deshacer!`)) {
+                 showSnackbar("Operación cancelada.", false, 'info', 3000); return;
+             }
+
+             // Reset data, keep reserve fund, rubro config, and calculated ipc snapshot
+             scenario.rubroOrder = { gastos: [], ingresos: [] };
+             scenario.data = { gastos: {}, ingresos: {} };
              scenario.monthStatus = { gastos: {}, ingresos: {} }; // Status only for Gastos
              // calculated data (except ipcManual snapshot) is reset within calculateAll
 
@@ -4294,6 +4277,31 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              // Recalculate to update totals to zero and refresh UI
              calculateAll(scenario); // Handles success message
         }
+        // --- Utilidades ---
+        function deepMerge(target, source) {
+             const output = { ...target };
+             if (isObject(target) && isObject(source)) {
+                 Object.keys(source).forEach(key => {
+                     const targetValue = target[key];
+                     const sourceValue = source[key];
+                     if (isObject(sourceValue) && isObject(targetValue)) {
+                         // Recurse into objects
+                         output[key] = deepMerge(targetValue, sourceValue);
+                     } else if (Array.isArray(sourceValue)) { // Always overwrite arrays from source
+                          output[key] = [...sourceValue];
+                     } else {
+                          // Overwrite primitive/non-object/non-array values from source
+                          output[key] = sourceValue !== undefined ? sourceValue : targetValue;
+                     }
+                 });
+             }
+             return output;
+         }
+
+        function isObject(item) {
+             return (item && typeof item === 'object' && !Array.isArray(item));
+        }
+
 
     </script>
 
