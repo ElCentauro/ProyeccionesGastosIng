@@ -4220,9 +4220,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      rubros: { gastos: [], ingresos: [] },
                      rubroConfig: {}, // Stores coefficientType assignment and collapsed state per rubro (global setting)
                      coefficientTypes: {
-                         "None": { name: "Sin Coeficiente", values: Array(12).fill(1), isDefault: true }, // Multiplier 1
+                         "None": { name: "Sin Coeficiente", values: Array(12).fill(0), isDefault: true }, // Multiplier 1
                          "IPC": { name: "IPC (Ejemplo)", values: [5, 4, 6, 3, 4, 5, 3, 4, 5, 6, 4, 5], isDefault: true }, // Percentages
-                         "UTEDYC": { name: "UTEDYC (Ejemplo)", values: [0, 0, 10, 0, 0, 8, 0, 0, 7, 0, 0, 5], isDefault: true }, // Percentages
+                         "UTEDYC": { name: "UTEDYC (Ejemplo)", values: [0, 0, 10, 0, 0, 8, 0, 0, 7, 0, 0, 5], isDefault: false }, // Percentages
                          "Sueldos": { name: "Sueldos Generales", values: [0, 0, 8, 0, 0, 6, 0, 0, 5, 0, 0, 4], isDefault: false } // Percentages
                      },
                      ipcManual: [5, 4, 6, 3, 4, 5, 3, 4, 5, 6, 4, 5] // Default IPC ref values (%)
@@ -4295,7 +4295,20 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              calculateAll(scenario); // Handles success message
         }
 
-    </script>
+    
+        // --- Sincroniza los valores IPC manual hacia el coeficiente 'IPC' y refresca editor si está abierto ---
+        function syncIPCToCoefficient() {
+            const ipcVals = appState.settings?.ipcManual;
+            if (Array.isArray(ipcVals) && ipcVals.length === 12) {
+                if (!appState.settings.coefficientTypes['IPC']) return;
+                appState.settings.coefficientTypes['IPC'].values = ipcVals.map(v => parseFloat(v || 0));
+                // Si estamos editando IPC, refrescar en modo solo-lectura
+                if (appState.uiState?.editingCoefficientType === 'IPC') {
+                    renderCoefficientValuesEditor('IPC', true);
+                }
+            }
+        }
+</script>
 
 <!-- Old or Unused Scripts (Commented Out or Removed) -->
 <!-- The following script blocks were identified as potentially unused or replaced by newer logic.
