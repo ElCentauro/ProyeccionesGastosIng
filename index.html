@@ -7,7 +7,41 @@
 <link rel="icon" type="image/png" href="favicon.png">
     <title>Proyección Expensas - Barrio El Centauro</title>
     <!-- Librería SheetJS (js-xlsx) para leer/escribir Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+// --- Util: convertir cualquier string "12.345,67" o "$ 12.345,67" a número ---
+function toNumber(val) {
+    if (typeof val === 'number') return val;
+    if (val === null || val === undefined) return 0;
+    let s = val.toString().trim();
+    // quitar símbolos de moneda y espacios
+    s = s.replace(/[^0-9,\.\-]/g, '');
+    // si tiene más de un punto, quitar los de miles
+    const parts = s.split(',');
+    if (parts.length === 2) {
+        s = parts[0].replace(/\./g, '') + '.' + parts[1];
+    } else {
+        s = s.replace(/\./g, '');
+    }
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+}
+
+
+// --- Mantener IPC manual sincronizado con tipo de coeficiente IPC ---
+function syncIPCToCoefficient() {
+    const ipcVals = appState.settings.ipcManual;
+    if (!Array.isArray(ipcVals) || ipcVals.length !== 12) return;
+    // detect any coefficient type flagged as IPC (name contains 'ipc')
+    Object.keys(appState.settings.coefficientTypes).forEach(key => {
+        const ct = appState.settings.coefficientTypes[key];
+        if ((ct.name || key).toString().toLowerCase().includes('ipc')) {
+            ct.values = ipcVals.map(v => parseFloat(v || 0));
+            ct.isDefault = true; // bloqueado
+        }
+    });
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Librería Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Plugin doughnut 3D shadow -->
@@ -503,9 +537,15 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         }
     </style>
 
-<style id="chart-legend-no-strike">
-.chartjs-legend li span, .chartjs-legend li span { text-decoration: none !important; }
+<!-- Legend strikethrough fix -->
+<style id="chart-legend-fix">
+.chartjs-legend li,
+.chartjs-legend li span,
+.chartjs-legend li * {
+  text-decoration: none !important;
+}
 </style>
+
 </head>
 <body>
     <header>
@@ -2535,6 +2575,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                           }
                           // Store the value directly (it's already a percentage)
                           appState.settings.ipcManual[monthIndex] = (!isNaN(value) && value >= 0) ? value : 0;
+        syncIPCToCoefficient();
                           // No saveState/recalc here; happens on main Save button
                       } else {
                           console.error("Invalid month index or value for IPC input.");
@@ -4224,9 +4265,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      rubros: { gastos: [], ingresos: [] },
                      rubroConfig: {}, // Stores coefficientType assignment and collapsed state per rubro (global setting)
                      coefficientTypes: {
-                         "None": { name: "Sin Coeficiente", values: Array(12).fill(1), isDefault: true }, // Multiplier 1
-                         "IPC": { name: "IPC (Ejemplo)", values: [5, 4, 6, 3, 4, 5, 3, 4, 5, 6, 4, 5], isDefault: true }, // Percentages
-                         "UTEDYC": { name: "UTEDYC (Ejemplo)", values: [0, 0, 10, 0, 0, 8, 0, 0, 7, 0, 0, 5], isDefault: true }, // Percentages
+                         "None": { name: "Sin Coeficiente", values: Array(12).fill(1), isDefault: true}, // Multiplier 1
+                         "IPC": { name: "IPC (Ejemplo)", values: [5, 4, 6, 3, 4, 5, 3, 4, 5, 6, 4, 5], isDefault: true}, // Percentages
+                         "UTEDYC": { name: "UTEDYC (Ejemplo)", values: [0, 0, 10, 0, 0, 8, 0, 0, 7, 0, 0, 5], isDefault: false }, // Percentages
                          "Sueldos": { name: "Sueldos Generales", values: [0, 0, 8, 0, 0, 6, 0, 0, 5, 0, 0, 4], isDefault: false } // Percentages
                      },
                      ipcManual: [5, 4, 6, 3, 4, 5, 3, 4, 5, 6, 4, 5] // Default IPC ref values (%)
