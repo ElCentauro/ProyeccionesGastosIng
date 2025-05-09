@@ -1387,7 +1387,7 @@ function recalculateEstimates() {
             let prevValue = parseFloat(values[lastRealIdx] || 0);
 
             for (let m = lastRealIdx + 1; m < 12; m++) {
-                if (statusRow[m] === 'Estimado') {
+                if ((statusRow[m] && statusRow[m].toUpperCase() === 'ESTIMADO')) {
                     const multiplier = 1 + (coefValues[m] / 100);
                     const projected = prevValue * multiplier;
                     rubroData.detailsData[detail][m] = projected;
@@ -3109,15 +3109,15 @@ function selectCoefficientTypeForEditing(typeKey) {
                                   // If we parsed a number from a string, is it REAL or ESTIMADO?
                                   // Let's stick to the rule: only native 'number' type from Excel is REAL.
                                   // Parsed strings are ESTIMADO (unless they match the regex check below).
-                                  status = 'ESTIMADO'; // Default for parsed strings
+                                  status = 'Estimado'; // Default for parsed strings
                              } else {
                                   // console.warn(`Valor no numérico o parseable "${cellValue}" en ${type}/${rubro}/${detail} - ${MONTHS[m]}. Usando 0.`);
                                   value = 0;
-                                   status = 'ESTIMADO'; // Ensure status is Estimated for non-numeric garbage
+                                   status = 'Estimado'; // Ensure status is Estimated for non-numeric garbage
                              }
                          } else { // cellValue is null, undefined, boolean, etc.
                               value = 0;
-                              status = 'ESTIMADO';
+                              status = 'Estimado';
                          }
                     }
                     // Assign value to SCENARIO data
