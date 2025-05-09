@@ -428,7 +428,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
          #coefficient-values-editor .text-muted { grid-column: 1 / -1; text-align: center; padding: 20px; } /* Center and span info message */
 
 
-         /* --- Snackbar --- */
+        /* --- Snackbar --- */
         #snackbar {
             visibility: hidden; min-width: 300px; max-width: 90%;
             background-color: var(--success-color); /* Default to success */
@@ -1087,14 +1087,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
                       // Ensure calculated substructures exist for this rubro
                       if (type === 'gastos') {
-                           calculated.gastoAjustado[rubro] = calculated.gastoAjustado[rubro] ?? {}; // Needs to be object to store details
-                           calculated.totalGastoRubroMes[rubro] = Array.isArray(calculated.totalGastoRubroMes[rubro]) && calculated.totalGastoRubroMes[rubro].length === 12 ? calculated.totalGastoRubroMes[rubro].map(v=>parseFloat(v||0)) : Array(12).fill(0);
+                           scenarioData.calculated.gastoAjustado[rubro] = scenarioData.calculated.gastoAjustado[rubro] ?? {};
+                           scenarioData.calculated.totalGastoRubroMes[rubro] = Array.isArray(scenarioData.calculated.totalGastoRubroMes[rubro]) && scenarioData.calculated.totalGastoRubroMes[rubro].length === 12 ? scenarioData.calculated.totalGastoRubroMes[rubro].map(v=>parseFloat(v||0)) : Array(12).fill(0);
                        } else { // ingresos
-                           calculated.ingresoAjustado[rubro] = calculated.ingresoAjustado[rubro] ?? {}; // Needs to be object to store details
-                            calculated.totalIngresoRubroMes[rubro] = Array.isArray(calculated.totalIngresoRubroMes[rubro]) && calculated.totalIngresoRubroMes[rubro].length === 12 ? calculated.totalIngresoRubroMes[rubro].map(v=>parseFloat(v||0)) : Array(12).fill(0);
+                           scenarioData.calculated.ingresoAjustado[rubro] = scenarioData.calculated.ingresoAjustado[rubro] ?? {};
+                           scenarioData.calculated.totalIngresoRubroMes[rubro] = Array.isArray(scenarioData.calculated.totalIngresoRubroMes[rubro]) && scenarioData.calculated.totalIngresoRubroMes[rubro].length === 12 ? scenarioData.calculated.totalIngresoRubroMes[rubro].map(v=>parseFloat(v||0)) : Array(12).fill(0);
                        }
                       // Ensure annual totals for the rubro exist
-                       calculated.annualTotals[type][rubro] = calculated.annualTotals[type][rubro] ?? 0; // Default to 0
+                       scenarioData.calculated.annualTotals[type][rubro] = scenarioData.calculated.annualTotals[type][rubro] ?? 0;
 
 
                      // Ensure detail data structures exist and are 12-element arrays of numbers within the rubro data
@@ -1124,8 +1124,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                            }
 
                            // Ensure calculated detail-level structure exists if missing
-                           if (type === 'gastos') calculated.gastoAjustado[rubro][detail] = Array.isArray(calculated.gastoAjustado[rubro][detail]) && calculated.gastoAjustado[rubro][detail].length === 12 ? calculated.gastoAjustado[rubro][detail].map(v=>parseFloat(v||0)) : Array(12).fill(0); // Ensure calculated values are numbers and 12 length
-                           else calculated.ingresoAjustado[rubro][detail] = Array.isArray(calculated.ingresoAjustado[rubro][detail]) && calculated.ingresoAjustado[rubro][detail].length === 12 ? calculated.ingresoAjustado[rubro][detail].map(v=>parseFloat(v||0)) : Array(12).fill(0); // Ensure calculated values are numbers and 12 length
+                           if (type === 'gastos') scenarioData.calculated.gastoAjustado[rubro][detail] = Array.isArray(scenarioData.calculated.gastoAjustado[rubro][detail]) && scenarioData.calculated.gastoAjustado[rubro][detail].length === 12 ? scenarioData.calculated.gastoAjustado[rubro][detail].map(v=>parseFloat(v||0)) : Array(12).fill(0); // Ensure calculated values are numbers and 12 length
+                           else scenarioData.calculated.ingresoAjustado[rubro][detail] = Array.isArray(scenarioData.calculated.ingresoAjustado[rubro][detail]) && scenarioData.calculated.ingresoAjustado[rubro][detail].length === 12 ? scenarioData.calculated.ingresoAjustado[rubro][detail].map(v=>parseFloat(v||0)) : Array(12).fill(0); // Ensure calculated values are numbers and 12 length
                        });
 
                       // After iterating through EXISTING details, check if any details exist in detailOrder but NOT in detailsData (shouldn't happen ideally, but cleanup)
@@ -2253,7 +2253,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      tooltip: {
                          backgroundColor: hexToRgba(cardBg, 0.9), // Semi-transparent background from card BG
                          titleColor: textColor, // Tooltip title color
-                         bodyColor: textColor, // Tooltip body color
+                         bodyColor: textColor, // Tooltip body text color
                          borderColor: borderColor, borderWidth: 1, padding: 10, // Tooltip border
                          callbacks: {
                              // Customize the body label (shows original label, value, percentage)
@@ -3402,3 +3402,4 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
 </body>
 </html>
+```
