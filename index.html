@@ -507,86 +507,105 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 <style id="legend-fix">
 .chartjs-legend li span,
 .chart-legend li span,
-.chartjs-legend li,
-.chart-legend li { text-decoration:none !important; }
+.chartjs-legend li.hidden span,
+.chart-legend li.hidden span,
+.chartjs-legend li.hidden,
+.chart-legend li.hidden { text-decoration:none !important; }
 </style>
+
 <script id="patch-recalc">
 (function(){
- // Util robusto
- function toNumber(val){
-   if(val===null||val===undefined) return 0;
-   if(typeof val==='number') return val;
-   let s=val.toString().trim();
-   if(!s) return 0;
-   s=s.replace(/[^0-9,.-]+/g,'');
-   if(s.indexOf('.')>-1 && s.indexOf(',')>-1){
-      if(s.lastIndexOf('.')>s.lastIndexOf(',')){ s=s.replace(/,/g,''); }
-      else { s=s.replace(/\./g,'').replace(',','.'); }
-   }else if(s.indexOf(',')>-1){ s=s.replace(/\./g,'').replace(',','.'); }
-   else { s=s.replace(/,/g,''); }
-   let n=parseFloat(s);
-   return isNaN(n)?0:n;
- }
- function syncIPC(){
-   const ipc = (appState?.settings?.ipcManual)||[];
-   if(!Array.isArray(ipc)||ipc.length!==12) return;
-   Object.keys(appState.settings.coefficientTypes).forEach(k=>{
-      const ct=appState.settings.coefficientTypes[k];
-      const name=(ct.name||k).toLowerCase();
-      if(name.includes('ipc')){
-         ct.values = ipc.map(v=>parseFloat(v||0));
-         ct.isDefault = true;
+  // ---------- util ----------
+  function toNumber(val){
+    if(val===null||val===undefined) return 0;
+    if(typeof val==='number') return val;
+    let s = val.toString().trim();
+    if(!s) return 0;
+    s = s.replace(/[^0-9,.,\-]/g,'');  // keep digits, dot, comma, dash
+    if(s.includes('.') && s.includes(',')){
+        if(s.lastIndexOf('.')>s.lastIndexOf(',')){ s = s.replace(/,/g,''); }
+        else { s = s.replace(/\./g,'').replace(',','.'); }
+    } else if (s.includes(',') && !s.includes('.')){
+        s = s.replace(/\./g,'').replace(',','.');
+    } else {
+        s = s.replace(/,/g,'');
+    }
+    const n = parseFloat(s);
+    return isNaN(n)?0:n;
+  }
+
+  function syncIPC(){
+    const ipcVals = (appState?.settings?.ipcManual)||[];
+    if(ipcVals.length!==12) return;
+    Object.keys(appState.settings.coefficientTypes).forEach(k=>{
+        const ct = appState.settings.coefficientTypes[k];
+        const n = (ct.name||k).toLowerCase();
+        if(n.includes('ipc')){
+            ct.values = ipcVals.map(v=>parseFloat(v||0));
+            ct.isDefault = true;
+        }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    try{ syncIPC(); }catch(e){ console.error('syncIPC',e); }
+
+    window.recalculateEstimates = function(){
+      const scenarioData = getCurrentScenarioData();
+      if(!scenarioData){ showSnackbar("No hay escenario activo.", true,'error'); return; }
+      const { data, monthStatus } = scenarioData;
+      const { rubroConfig={}, coefficientTypes={} } = appState.settings;
+
+      const resolveCoef = key=>{
+        if(!key) key='None';
+        if(coefficientTypes[key]) return (coefficientTypes[key].values||[]).map(toNumber);
+        const alt = Object.keys(coefficientTypes).find(k=>(coefficientTypes[k].name||'').toLowerCase()===key.toLowerCase());
+        return alt ? (coefficientTypes[alt].values||[]).map(toNumber) : Array(12).fill(0);
+      };
+
+      const isReal = s=>(s||'').toString().trim().toUpperCase()==='REAL';
+      let updated=0;
+
+      for(const rubro of Object.keys(data.gastos||{})){
+        const rData = data.gastos[rubro];
+        const coefKey = (rubroConfig[rubro]?.coefficientType)||'None';
+        const coefVals = resolveCoef(coefKey);
+
+        for(const det of Object.keys(rData.detailsData||{})){
+          const vals = rData.detailsData[det];
+          const statRow = (monthStatus.gastos && monthStatus.gastos[rubro] && monthStatus.gastos[rubro][det])
+                            ? monthStatus.gastos[rubro][det] : Array(12).fill('');
+
+          // buscar último mes con valor >0 y marcado REAL o sin marca (considerar real)
+          let lastIdx=-1;
+          for(let i=11;i>=0;i--){
+              if(toNumber(vals[i])>0 && (isReal(statRow[i])||statRow[i]==='')){
+                  lastIdx=i; break;
+              }
+          }
+          if(lastIdx===-1 || lastIdx===11) continue;
+          let prev=toNumber(vals[lastIdx]);
+
+          for(let m=lastIdx+1;m<12;m++){
+              if(isReal(statRow[m])){ prev=toNumber(vals[m]); continue; }
+              let newVal;
+              if(coefKey==='None'||coefKey.toLowerCase().includes('sin coef')){
+                  newVal = prev;
+              } else {
+                  const pct = toNumber(coefVals[m]);
+                  const mult = 1 + pct/100;
+                  newVal = isFinite(mult) ? prev*mult : prev;
+              }
+              vals[m] = newVal;
+              prev = newVal;
+              updated++;
+          }
+        }
       }
-   });
- }
- document.addEventListener('DOMContentLoaded', ()=>{
-   try{ syncIPC(); }catch(e){ console.warn('syncIPC',e);}
-   // Sobreescribimos recalculateEstimates conservando resto del código
-   if(typeof recalculateEstimates==='function'){
-     window.recalculateEstimates = function(){
-       const scenarioData = getCurrentScenarioData();
-       if(!scenarioData){ showSnackbar("No hay escenario activo.", true, 'error'); return; }
-       const { data, monthStatus } = scenarioData;
-       const { rubroConfig={}, coefficientTypes={} } = appState.settings;
-       const resolveCoef = (k)=>{
-          if(!k) k='None';
-          if(coefficientTypes[k]) return (coefficientTypes[k].values||[]).map(toNumber);
-          const fk = Object.keys(coefficientTypes).find(x=>(coefficientTypes[x].name||'').toLowerCase()===k.toLowerCase());
-          return fk?(coefficientTypes[fk].values||[]).map(toNumber):Array(12).fill(0);
-       };
-       const isReal = s=>(s||'').toString().trim().toUpperCase()==='REAL';
-       let upd=0;
-       for(const rubro of Object.keys(data.gastos||{})){
-         const rubroData = data.gastos[rubro];
-         const coefKey = (rubroConfig[rubro]?.coefficientType)||'None';
-         const coefVals = resolveCoef(coefKey);
-         for(const det of Object.keys(rubroData.detailsData||{})){
-           const vals = rubroData.detailsData[det];
-           const statRow = (monthStatus.gastos && monthStatus.gastos[rubro] && monthStatus.gastos[rubro][det])?monthStatus.gastos[rubro][det]:Array(12).fill('ESTIMADO');
-           let lastReal = -1;
-           for(let i=11;i>=0;i--){ if(isReal(statRow[i]) && toNumber(vals[i])>0){ lastReal=i; break;} }
-           if(lastReal===-1 || lastReal===11) continue;
-           let prev = toNumber(vals[lastReal]);
-           for(let m=lastReal+1;m<12;m++){
-             if(isReal(statRow[m])){ prev=toNumber(vals[m]); continue; }
-             let newVal;
-             if(coefKey==='None'||coefKey.toLowerCase().includes('sin coef')) newVal=prev;
-             else{
-               const pct = toNumber(coefVals[m]);
-               const mult = 1 + pct/100;
-               newVal = isFinite(mult)? prev*mult : prev;
-             }
-             vals[m] = newVal;
-             prev = newVal;
-             upd++;
-           }
-         }
-       }
-       if(upd){ showSnackbar(`Estimados recalculados: ${upd} celdas.`, false,'success'); saveState(); updateUI(); }
-       else { showSnackbar('No se proyectó nada.', false,'info'); }
-     };
-   }
- });
+      if(updated){ showSnackbar(`Estimados recalculados: ${updated} celdas.`, false,'success'); saveState(); updateUI();}
+      else{ showSnackbar('No se proyectó nada.', false,'info'); }
+    };
+  });
 })();
 </script>
 <!-- PATCH END -->
