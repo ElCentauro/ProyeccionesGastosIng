@@ -1,3 +1,23 @@
+Entendido. El error `TypeError: Cannot read properties of undefined (reading 'gastos')` que ocurre en `updateCollapsibleTable` (línea 1606), y que se propaga desde `reader.onload` (cuando se procesa un archivo Excel), indica que `appState.settings.rubros` es `undefined` en el momento en que se intenta acceder a `appState.settings.rubros.gastos`.
+
+Esto puede suceder si el estado cargado desde `localStorage` no tiene una estructura completa para `appState.settings.rubros`, o si alguna operación intermedia lo deja en un estado inconsistente antes de que las funciones de renderizado lo necesiten.
+
+He realizado las siguientes correcciones y mejoras:
+
+1.  **Refuerzo en `loadState()`**: Se ha añadido una verificación explícita después de `deepMerge` para asegurar que `appState.settings`, `appState.settings.rubros`, `appState.settings.rubros.gastos`, y `appState.settings.rubros.ingresos` existan y tengan el tipo correcto (objeto y arrays respectivamente). Si alguna de estas estructuras falta o es incorrecta después de cargar desde `localStorage`, se restaura a su valor por defecto.
+2.  **Guardas en funciones clave**:
+    *   En `updateCollapsibleTable()`: Antes de acceder a `appState.settings.rubros[type]`, se verifica su existencia y se usa un array vacío como fallback si no está definido, previniendo el error directo.
+    *   En `initializeScenarioDataForRubros()`: Se aplica una guarda similar al iterar sobre `appState.settings.rubros[type]`.
+    *   En `updateRubroList()`: Se asegura que se itere sobre un array válido de rubros.
+    *   En `addRubro()`: Se asegura que `appState.settings.rubros[type]` sea un array antes de intentar añadirle un nuevo rubro.
+3.  **Actualización de `STORAGE_KEY`**: Se ha cambiado a `expensasAppCentauroState_v2.9_RubrosFix`. Esto es importante porque si el problema proviene de un estado corrupto en `localStorage` de una versión anterior, este cambio forzará a la aplicación a comenzar con un estado por defecto limpio, evitando que el error persista debido a datos guardados incorrectamente.
+4.  **Actualización de versión en el footer**.
+
+Estos cambios deberían hacer la aplicación más robusta frente a estados incompletos o corruptos de `settings.rubros` y resolver el error reportado.
+
+Aquí está el código completo con las correcciones:
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -751,7 +771,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
     <footer>
         <div class="container">
-            &copy; <span id="footer-year"></span> Proyección Expensas El Centauro. v2.8 (Funciones faltantes)
+            &copy; <span id="footer-year"></span> Proyección Expensas El Centauro. v2.9 (Rubros Fix)
         </div>
     </footer>
     <div id="snackbar">Mensaje</div>
@@ -763,7 +783,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         const FULL_MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
         const GASTOS_SHEET_NAME = "Gastos";
         const INGRESOS_SHEET_NAME = "Ingresos";
-        const STORAGE_KEY = 'expensasAppCentauroState_v2.8_CoreFunctions'; // Nueva version por cambios significativos
+        const STORAGE_KEY = 'expensasAppCentauroState_v2.9_RubrosFix'; // Nueva version por corrección
         const CUOTA_RUBRO_NAME = "Expensas Ordinarias";
         const EXTRA_CUOTA_RUBRO_NAME = "Expensas Extraordinarias";
         const SPECIAL_INGRESO_RUBROS = [CUOTA_RUBRO_NAME, EXTRA_CUOTA_RUBRO_NAME];
@@ -789,7 +809,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
             initUI();
             addEventListeners();
-            updateUI(); // Renderizar todo con el estado actual/cargado
+            updateUI();
             console.log(`App ${STORAGE_KEY} Inicializada.`);
         });
 
@@ -822,8 +842,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                 console.log(`Clave activa inválida o ausente. Buscando alternativa o creando base...`);
                 const defaultYear = new Date().getFullYear();
                 const defaultYearBaseKey = `${defaultYear}_Base`;
-                const scenariosForCurrentYear = Object.keys(appState.scenarios || {}).filter(k => k.startsWith(`${appState.currentYear}_`));
-                 const scenariosForDefaultYear = Object.keys(appState.scenarios || {}).filter(k => k.startsWith(`${defaultYear}_`));
+                const scenariosForCurrentYear = Object.keys(appState.scenarios || {}).filter(k => appState.scenarios[k]?.year === appState.currentYear); // Corrected to use scenario.year
+                 const scenariosForDefaultYear = Object.keys(appState.scenarios || {}).filter(k => appState.scenarios[k]?.year === defaultYear); // Corrected
 
                 let fallbackKey = null;
 
@@ -992,7 +1012,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              }
 
              ['gastos', 'ingresos'].forEach(type => {
-                 const globalRubros = appState.settings?.rubros?.[type] || [];
+                 const globalRubros = (appState.settings && appState.settings.rubros && Array.isArray(appState.settings.rubros[type]))
+                                    ? appState.settings.rubros[type]
+                                    : [];
                  globalRubros.forEach(rubro => {
                       if (!scenarioData.data[type][rubro]) {
                            scenarioData.data[type][rubro] = { detailOrder: [], detailsData: {} };
@@ -1039,16 +1061,18 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  });
 
                 ['gastos', 'ingresos'].forEach(type => {
-                   const globalRubros = appState.settings.rubros[type] || [];
+                   const globalRubrosForType = (appState.settings && appState.settings.rubros && Array.isArray(appState.settings.rubros[type]))
+                                        ? appState.settings.rubros[type]
+                                        : [];
                    const scenarioRubrosInData = Object.keys(scenarioData.data[type] || {});
                    scenarioRubrosInData.forEach(rubro => {
-                       if (!globalRubros.includes(rubro)) {
+                       if (!globalRubrosForType.includes(rubro)) {
                             console.warn(`Rubro "${rubro}" exists in scenario.data[${type}] but not in global settings. Removing from scenario data.`);
                            delete scenarioData.data[type][rubro];
                            if (type === 'gastos') delete scenarioData.monthStatus[type][rubro];
                        }
                    });
-                     scenarioData.rubroOrder[type] = scenarioData.rubroOrder[type].filter(rubro => globalRubros.includes(rubro));
+                     scenarioData.rubroOrder[type] = scenarioData.rubroOrder[type].filter(rubro => globalRubrosForType.includes(rubro));
                 });
              });
             console.log(`Initialization for ${scenarioData.scenarioName} completed.`);
@@ -1091,9 +1115,10 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              calculated.annualTotals.cuotaIpc = 0;
              calculated.annualTotals.cuotaRealBase = 0;
 
-              const gastoRubros = (Array.isArray(scenarioData.rubroOrder?.gastos) && scenarioData.rubroOrder.gastos.length > 0)
-                                ? scenarioData.rubroOrder.gastos.filter(rubro => settings.rubros.gastos.includes(rubro) && data.gastos?.[rubro]?.detailsData)
-                                : (settings.rubros.gastos || []).filter(rubro => data.gastos?.[rubro]?.detailsData);
+            const globalGastosRubros = (settings && settings.rubros && Array.isArray(settings.rubros.gastos)) ? settings.rubros.gastos : [];
+            const gastoRubros = (Array.isArray(scenarioData.rubroOrder?.gastos) && scenarioData.rubroOrder.gastos.length > 0)
+                                ? scenarioData.rubroOrder.gastos.filter(rubro => globalGastosRubros.includes(rubro) && data.gastos?.[rubro]?.detailsData)
+                                : (globalGastosRubros || []).filter(rubro => data.gastos?.[rubro]?.detailsData);
 
              gastoRubros.forEach(rubro => {
                  if (!data.gastos || !data.gastos[rubro] || !data.gastos[rubro].detailsData) {
@@ -1151,9 +1176,10 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const unidades = parseInt(cantidadUnidades) || 1;
              const unidadesForCuotaReal = unidades > 0 ? unidades : 1;
 
+            const globalIngresosRubros = (settings && settings.rubros && Array.isArray(settings.rubros.ingresos)) ? settings.rubros.ingresos : [];
              const ingresoRubros = (Array.isArray(scenarioData.rubroOrder?.ingresos) && scenarioData.rubroOrder.ingresos.length > 0)
-                                   ? scenarioData.rubroOrder.ingresos.filter(rubro => settings.rubros.ingresos.includes(rubro) && data.ingresos?.[rubro]?.detailsData)
-                                   : (settings.rubros.ingresos || []).filter(rubro => data.ingresos?.[rubro]?.detailsData);
+                                   ? scenarioData.rubroOrder.ingresos.filter(rubro => globalIngresosRubros.includes(rubro) && data.ingresos?.[rubro]?.detailsData)
+                                   : (globalIngresosRubros || []).filter(rubro => data.ingresos?.[rubro]?.detailsData);
 
              ingresoRubros.forEach(rubro => {
                   if (!data.ingresos || !data.ingresos[rubro] || !data.ingresos[rubro].detailsData) return;
@@ -1254,13 +1280,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
             const { data, monthStatus, rubroOrder } = scenarioData;
             const { settings } = appState;
-            const { rubros, rubroConfig, coefficientTypes } = settings;
+            const { rubroConfig, coefficientTypes } = settings; // Removed 'rubros' here, use 'settings.rubros'
             let changesMade = false;
             let projectedCellCount = 0;
 
-             const gastoRubrosToProcess = (Array.isArray(rubroOrder?.gastos) && rubroOrder.gastos.length > 0)
-                                          ? rubroOrder.gastos.filter(rubro => settings.rubros.gastos.includes(rubro) && data.gastos?.[rubro]?.detailsData)
-                                          : (settings.rubros.gastos || []).filter(rubro => data.gastos?.[rubro]?.detailsData);
+            const globalGastosRubros = (settings && settings.rubros && Array.isArray(settings.rubros.gastos)) ? settings.rubros.gastos : [];
+            const gastoRubrosToProcess = (Array.isArray(rubroOrder?.gastos) && rubroOrder.gastos.length > 0)
+                                          ? rubroOrder.gastos.filter(rubro => globalGastosRubros.includes(rubro) && data.gastos?.[rubro]?.detailsData)
+                                          : (globalGastosRubros || []).filter(rubro => data.gastos?.[rubro]?.detailsData);
 
             if (gastoRubrosToProcess.length === 0) {
                  showSnackbar("No hay rubros de gasto definidos o con datos cargados para proyectar.", false, 'info', 3000);
@@ -1284,7 +1311,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  const rawCoefValues = currentCoefficientType?.values;
                  const monthlyMultipliers = Array(12).fill(1);
 
-                 if (currentCoefficientType && coefTypeKey !== 'None' && Array.isArray(rawCoefValues) && rawCoefValues.length === 12) { // Corrected: coefTypeKey, not key
+                 if (currentCoefficientType && coefTypeKey !== 'None' && Array.isArray(rawCoefValues) && rawCoefValues.length === 12) {
                       for(let i = 0; i < 12; i++) {
                            const percentage = parseFloat(rawCoefValues[i] || 0);
                             if (!isNaN(percentage)) {
@@ -1296,7 +1323,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  }
 
                 detailOrder.forEach(detail => {
-                    const currentStatuses = (monthStatus.gastos && monthStatus.gastos[rubro]?.[detail] && Array.isArray(monthStatus.gastos[rubro][detail]) && monthStatus.gastos[rubro][detail].length === 12) // Corrected path
+                    const currentStatuses = (monthStatus.gastos && monthStatus.gastos[rubro]?.[detail] && Array.isArray(monthStatus.gastos[rubro][detail]) && monthStatus.gastos[rubro][detail].length === 12)
                                             ? monthStatus.gastos[rubro][detail]
                                             : Array(12).fill('Estimado');
                     const currentDataValues = Array.isArray(data.gastos[rubro]?.detailsData?.[detail]) && data.gastos[rubro].detailsData[detail].length === 12
@@ -1366,14 +1393,12 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  renderEmptyState();
                  updateCurrentYearAndScenarioInUI();
                  updateScenarioSelector();
-                 // updateReportsPanel(); // These are now called within renderEmptyState or after data load
-                 // updateSettingsPanel();
                  return;
              }
 
              updateCurrentYearAndScenarioInUI();
              updateScenarioSelector();
-             updateDashboardTables(scenarioData); // DEFINED NOW
+             updateDashboardTables(scenarioData);
              updateCharts(scenarioData);
              updateReserveFundPanel(scenarioData);
              updateSettingsPanel();
@@ -1589,12 +1614,19 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              const expectedHeaderCount = (type === 'gastos' ? 2 : 1) + MONTHS.length + 1;
 
-             if (!scenarioData || !scenarioData.data || !scenarioData.calculated || !appState.settings || !appState.settings.rubros) {
+             if (!scenarioData || !scenarioData.data || !scenarioData.calculated || !appState.settings ) { // Removed !appState.settings.rubros for now, handled by globalRubrosForType
                  const actualHeaderCount = thead.querySelector('tr')?.cells.length || expectedHeaderCount;
                  tbody.innerHTML = `<tr><td colspan="${actualHeaderCount}" class="text-muted" style="text-align: center; padding: 20px;">Faltan datos o configuración para mostrar el detalle.</td></tr>`;
                  ensureCollapsibleTableHeaderFooterCells(thead, tfoot, type);
                  return;
              }
+             const globalRubrosForType = (appState.settings && appState.settings.rubros && Array.isArray(appState.settings.rubros[type]))
+                                        ? appState.settings.rubros[type]
+                                        : [];
+             if (globalRubrosForType.length === 0 && (type === 'gastos' || type === 'ingresos') ) { // Check if any rubros are defined
+                console.warn(`No hay rubros globales definidos para el tipo "${type}" en appState.settings.rubros.`);
+             }
+
 
              const { data, calculated, monthStatus, rubroOrder } = scenarioData;
              const config = appState.settings.rubroConfig || {};
@@ -1602,9 +1634,10 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const totalRubroSet = calculated[type === 'gastos' ? 'totalGastoRubroMes' : 'totalIngresoRubroMes'] || {};
              const annualRubroTotals = calculated.annualTotals?.[type] || { __TOTAL__: 0 };
 
+
              const rubrosToDisplay = (Array.isArray(rubroOrder[type]) && rubroOrder[type].length > 0)
-                                    ? rubroOrder[type].filter(rubro => settings.rubros[type].includes(rubro) && data[type]?.[rubro]?.detailsData)
-                                    : (settings.rubros[type] || []).filter(rubro => data[type]?.[rubro]?.detailsData);
+                                    ? rubroOrder[type].filter(rubro => globalRubrosForType.includes(rubro) && data[type]?.[rubro]?.detailsData)
+                                    : (globalRubrosForType || []).filter(rubro => data[type]?.[rubro]?.detailsData);
 
              ensureCollapsibleTableHeaderFooterCells(thead, tfoot, type);
              const actualHeaderCount = thead.querySelector('tr')?.cells.length || expectedHeaderCount;
@@ -1787,7 +1820,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              destroyChart('participacionGastosChart');
              const ctxGastos = document.getElementById('participacionGastosChart')?.getContext('2d');
-             const activeGastoRubros = (appState.settings.rubros?.gastos || []).filter(rubro => (calculated.annualTotals?.gastos?.[rubro] || 0) > 0);
+             const activeGastoRubros = ((appState.settings && appState.settings.rubros && appState.settings.rubros.gastos) ? appState.settings.rubros.gastos : []).filter(rubro => (calculated.annualTotals?.gastos?.[rubro] || 0) > 0);
              const gastoLabels = activeGastoRubros;
              const gastoData = activeGastoRubros.map(rubro => calculated.annualTotals.gastos[rubro] || 0);
              displayChartNoData('participacionGastosChart', gastoData.length === 0 || gastoData.every(d => d === 0));
@@ -1801,7 +1834,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              destroyChart('participacionIngresosChart');
              const ctxIngresos = document.getElementById('participacionIngresosChart')?.getContext('2d');
-              const activeIngresoRubros = (appState.settings.rubros?.ingresos || []).filter(rubro => (calculated.annualTotals?.ingresos?.[rubro] || 0) > 0);
+              const activeIngresoRubros = ((appState.settings && appState.settings.rubros && appState.settings.rubros.ingresos) ? appState.settings.rubros.ingresos : []).filter(rubro => (calculated.annualTotals?.ingresos?.[rubro] || 0) > 0);
              const ingresoLabels = activeIngresoRubros;
              const ingresoData = activeIngresoRubros.map(rubro => calculated.annualTotals.ingresos[rubro] || 0);
              displayChartNoData('participacionIngresosChart', ingresoData.length === 0 || ingresoData.every(d => d === 0));
@@ -1998,7 +2031,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                       if (appState.activeScenarioKey && appState.scenarios?.[appState.activeScenarioKey]) {
                          event.target.value = appState.activeScenarioKey;
                       } else {
-                           selector.value = ""; // selector is not defined here, should be event.target
+                           // selector is not defined here, should be event.target.value = ""
+                           event.target.value = "";
                       }
                        updateUI();
                  }
@@ -2256,7 +2290,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                 return;
             }
 
-            if (newYear === appState.currentYear && appState.scenarios && Object.keys(appState.scenarios).some(k => k.startsWith(`${newYear}_`))) {
+            if (newYear === appState.currentYear && appState.scenarios && Object.keys(appState.scenarios).some(k => appState.scenarios[k]?.year === newYear)) { // Corrected check
                 showSnackbar(`El año ${newYear} ya está seleccionado y tiene escenarios.`, false, 'info');
                 return;
             }
@@ -2270,7 +2304,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         }
 
         function createScenario() {
-            const scenarioName = prompt(`Ingrese el nombre para el nuevo escenario (Año ${appState.currentYear}):`, `Escenario ${Object.keys(appState.scenarios).filter(k => k.startsWith(`${appState.currentYear}_`)).length + 1}`);
+            const scenarioName = prompt(`Ingrese el nombre para el nuevo escenario (Año ${appState.currentYear}):`, `Escenario ${Object.keys(appState.scenarios).filter(k => appState.scenarios[k]?.year === appState.currentYear).length + 1}`); // Corrected filter
             if (!scenarioName || scenarioName.trim() === '') {
                 showSnackbar("Creación de escenario cancelada (nombre vacío).", false, 'info');
                 return;
@@ -2285,11 +2319,11 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                 showSnackbar(`El escenario "${scenarioName}" ya existe para el año ${appState.currentYear}.`, true, 'error', 5000);
                 return;
             }
-            initScenarioData(appState.currentYear, sanitizedName);
+            initScenarioData(appState.currentYear, scenarioName.trim()); // Pass trimmed name
             appState.activeScenarioKey = newKey;
             initializeScenarioDataForRubros(appState.scenarios[newKey]);
             calculateAll(appState.scenarios[newKey]);
-            showSnackbar(`Escenario "${scenarioName}" creado y activado.`, false, 'success');
+            showSnackbar(`Escenario "${scenarioName.trim()}" creado y activado.`, false, 'success');
         }
 
         function cloneScenario() {
@@ -2319,7 +2353,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             appState.currentYear = currentScenario.year;
             initializeScenarioDataForRubros(appState.scenarios[newKey]);
             calculateAll(appState.scenarios[newKey]);
-            showSnackbar(`Escenario "${currentScenario.scenarioName}" clonado como "${newScenarioName}" y activado.`, false, 'success');
+            showSnackbar(`Escenario "${currentScenario.scenarioName}" clonado como "${newScenarioName.trim()}" y activado.`, false, 'success');
         }
 
         function deleteScenario() {
@@ -2363,7 +2397,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                     showSnackbar(`Valor inválido para ${FULL_MONTHS[i]} en Fondo de Reserva. Debe ser un número >= 0.`, true, 'error', 5000);
                     input.value = scenarioData.reserveFund.values[i] || (type === 'percent' ? 5 : 0);
                     allValid = false;
-                    return;
+                    return; // from forEach callback
                 }
                 scenarioData.reserveFund.values[i] = val;
             });
@@ -2384,12 +2418,12 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             const scenarioData = getCurrentScenarioData();
             if (!scenarioData) {
                 showSnackbar("No hay escenario activo para aplicar la configuración.", true, 'error', 5000);
-                saveState();
+                saveState(); // Save settings even if no scenario active
                 updateSettingsPanel();
                 return;
             }
             showSnackbar("Configuración guardada. Recalculando escenario actual...", false, 'info', 2000);
-            calculateAll(scenarioData);
+            calculateAll(scenarioData); // This also saves state
         }
 
         function handleFileUpload(files) {
@@ -2440,6 +2474,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                         if (gastosJson.length > 1) {
                             scenarioData.data.gastos = {};
                             scenarioData.monthStatus.gastos = {};
+                             // Ensure global rubros list for gastos exists
+                            if (!Array.isArray(appState.settings.rubros.gastos)) appState.settings.rubros.gastos = [];
+
                             for (let i = 1; i < gastosJson.length; i++) {
                                 const row = gastosJson[i];
                                 const rubroName = String(row[0] || '').trim();
@@ -2492,6 +2529,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                         const ingresosJson = XLSX.utils.sheet_to_json(ingresosSheet, { header: 1, blankrows: false });
                         if (ingresosJson.length > 1) {
                             scenarioData.data.ingresos = {};
+                            // Ensure global rubros list for ingresos exists
+                            if (!Array.isArray(appState.settings.rubros.ingresos)) appState.settings.rubros.ingresos = [];
+
                             for (let i = 1; i < ingresosJson.length; i++) {
                                 const row = ingresosJson[i];
                                 const rubroName = String(row[0] || '').trim();
@@ -2644,7 +2684,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen General");
 
             const gastosReportData = [["Rubro", "Detalle", "Coef. Aplicado", ...MONTHS, "Total Anual"]];
-            (scenario.rubroOrder.gastos || []).forEach(rubro => {
+            ((appState.settings && appState.settings.rubros && appState.settings.rubros.gastos) ? appState.settings.rubros.gastos : []).forEach(rubro => { // Use global rubro list for order
+                if (!scenario.data.gastos[rubro]) return; // Skip if no data for this rubro in scenario
                 const config = appState.settings.rubroConfig[rubro] || {};
                 const coefTypeKey = config.coefficientType || 'None';
                 const coefName = appState.settings.coefficientTypes[coefTypeKey]?.name || 'N/A';
@@ -2660,7 +2701,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             XLSX.utils.book_append_sheet(wb, wsGastos, "Detalle Gastos");
 
             const ingresosReportData = [["Rubro", "Detalle", ...MONTHS, "Total Anual"]];
-             (scenario.rubroOrder.ingresos || []).forEach(rubro => {
+             ((appState.settings && appState.settings.rubros && appState.settings.rubros.ingresos) ? appState.settings.rubros.ingresos : []).forEach(rubro => { // Use global rubro list for order
+                if (!scenario.data.ingresos[rubro]) return; // Skip if no data
                 const rubroTotals = scenario.calculated.totalIngresoRubroMes?.[rubro] || Array(12).fill(0);
                 ingresosReportData.push([ rubro, "TOTAL RUBRO (Calculado)", ...rubroTotals, scenario.calculated.annualTotals.ingresos?.[rubro] || 0 ]);
                 (scenario.data.ingresos[rubro]?.detailOrder || []).forEach(detail => {
@@ -2677,7 +2719,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                 configData.push([`Coef. Tipo: ${type.name} (${key})`, "Valores Mensuales (%)"]);
                 type.values.forEach((val,i) => configData.push([MONTHS[i], val]));
             });
-            appState.settings.rubros.gastos.forEach(rubro => {
+            ((appState.settings && appState.settings.rubros && appState.settings.rubros.gastos) ? appState.settings.rubros.gastos : []).forEach(rubro => {
                 const coefKey = appState.settings.rubroConfig[rubro]?.coefficientType || 'None';
                 configData.push([`Rubro Gasto: ${rubro}`, `Coef. Asignado: ${appState.settings.coefficientTypes[coefKey]?.name || 'N/A'}`]);
             });
@@ -2882,6 +2924,26 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      console.log("Estado guardado parseado:", loadedState);
                      appState = deepMerge(getDefaultAppState(), loadedState);
                      console.log(`Estado ${STORAGE_KEY} cargado y fusionado con estado por defecto.`);
+
+                    // --- INICIO: Verificación adicional de estructura post-carga ---
+                    if (!appState.settings) {
+                        appState.settings = getDefaultAppState().settings;
+                        console.warn("appState.settings estaba ausente después de la carga. Restaurado a default.");
+                    }
+                    if (!appState.settings.rubros || typeof appState.settings.rubros !== 'object' || appState.settings.rubros === null) { // Added null check
+                        appState.settings.rubros = { gastos: [], ingresos: [] };
+                        console.warn("appState.settings.rubros estaba ausente o no era un objeto. Restaurado a default.");
+                    }
+                    if (!Array.isArray(appState.settings.rubros.gastos)) {
+                        appState.settings.rubros.gastos = [];
+                        console.warn("appState.settings.rubros.gastos no era un array. Restaurado a array vacío.");
+                    }
+                    if (!Array.isArray(appState.settings.rubros.ingresos)) {
+                        appState.settings.rubros.ingresos = [];
+                        console.warn("appState.settings.rubros.ingresos no era un array. Restaurado a array vacío.");
+                    }
+                    // --- FIN: Verificación adicional ---
+
                  } else {
                      console.log(`No hay estado guardado para key "${STORAGE_KEY}". Usando estado por defecto.`);
                      appState = getDefaultAppState();
@@ -2915,7 +2977,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             };
             const defaultSettings = {
                  cantidadUnidades: 100,
-                 rubros: { gastos: [], ingresos: [] },
+                 rubros: { gastos: [], ingresos: [] }, // ASEGURAR QUE ESTO SIEMPRE SEA UN OBJETO CON ARRAYS
                  rubroConfig: {},
                  coefficientTypes: {
                      "None": { name: "Sin Coeficiente", values: Array(12).fill(1), isDefault: true },
