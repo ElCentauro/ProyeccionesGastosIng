@@ -1593,41 +1593,108 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              if (yearInput) yearInput.setAttribute('value', appState.currentYear);
              if (footerYear) footerYear.textContent = new Date().getFullYear();
 
-             updateScenarioSelector(); // Populate selector based on loaded state
-             updateCurrentYearAndScenarioInUI(); // Set initial text based on active scenario/year
+             updateScenarioSelector();
+             updateCurrentYearAndScenarioInUI();
         }
 
         function updateUI() {
              console.log("Actualizando UI completa...");
-             // Re-fetch scenario data after potential validation/fallback
              const scenarioData = getCurrentScenarioData();
 
              if (!scenarioData) {
                  console.warn("updateUI: No hay escenario activo o datos válidos disponibles. Renderizando estado vacío.");
-                 renderEmptyState(); // Show empty state if no valid scenario data
-                 updateCurrentYearAndScenarioInUI(); // Still update year/scenario display (might show 'Ninguno')
-                 updateScenarioSelector(); // Update selector too (might show empty)
-                 updateReportsPanel(); // Disable report buttons
-                 updateSettingsPanel(); // Update settings lists and inputs (independent of scenario data details/totals)
-                 return; // Stop further UI updates
+                 renderEmptyState();
+                 updateCurrentYearAndScenarioInUI();
+                 updateScenarioSelector();
+                 updateReportsPanel();
+                 updateSettingsPanel();
+                 return;
              }
 
-             // If we have valid scenario data, ensure it's properly initialized structurally
-             // This step is crucial in case new global rubros or details were added from Excel
-             // or if state was loaded from an older version.
-             // No need to call initializeScenarioDataForRubros again here; it's handled by calculateAll and validateAndSetActiveScenario.
-
-
-             // Update all relevant UI sections
-             updateCurrentYearAndScenarioInUI(); // Update display year/scenario
-             updateScenarioSelector(); // Ensure selector reflects current state and year
-             updateDashboardTables(scenarioData); // Update summary and detail tables with calculated/data
-             updateCharts(scenarioData); // Update all charts with calculated data
-             updateReserveFundPanel(scenarioData); // Update reserve fund inputs/type based on state
-             updateSettingsPanel(); // Update settings lists and inputs based on state (global config)
-             updateReportsPanel(); // Enable/disable report buttons based on data availability
+             updateCurrentYearAndScenarioInUI();
+             updateScenarioSelector();
+             updateDashboardTables(scenarioData);
+             updateCharts(scenarioData);
+             updateReserveFundPanel(scenarioData);
+             updateSettingsPanel();
+             updateReportsPanel();
              console.log("UI Actualizada.");
         }
+
+        function updateScenarioSelector() {
+            const selector = document.getElementById('scenario-selector');
+            if (!selector) {
+                console.warn("Scenario selector element not found.");
+                return;
+            }
+
+            const previousValue = selector.value;
+            selector.innerHTML = '';
+
+            const scenariosForCurrentYear = Object.keys(appState.scenarios || {})
+                .filter(key => appState.scenarios[key]?.year === appState.currentYear)
+                .sort((a, b) => {
+                    const nameA = appState.scenarios[a]?.scenarioName || a;
+                    const nameB = appState.scenarios[b]?.scenarioName || b;
+                    return nameA.localeCompare(nameB);
+                });
+
+            if (scenariosForCurrentYear.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "No hay escenarios para este año";
+                option.disabled = true;
+                selector.appendChild(option);
+                selector.value = "";
+            } else {
+                scenariosForCurrentYear.forEach(key => {
+                    const scenario = appState.scenarios[key];
+                    if (scenario) {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = `${scenario.scenarioName} (${scenario.year})`;
+                        selector.appendChild(option);
+                    }
+                });
+
+                if (appState.activeScenarioKey && scenariosForCurrentYear.includes(appState.activeScenarioKey)) {
+                    selector.value = appState.activeScenarioKey;
+                } else if (scenariosForCurrentYear.includes(previousValue)) {
+                     selector.value = previousValue;
+                } else if (scenariosForCurrentYear.length > 0) {
+                    const baseKeyForYear = `${appState.currentYear}_Base`;
+                    if (scenariosForCurrentYear.includes(baseKeyForYear)) {
+                        selector.value = baseKeyForYear;
+                    } else {
+                        selector.value = scenariosForCurrentYear[0];
+                    }
+                }
+            }
+            if (appState.activeScenarioKey && selector.value !== appState.activeScenarioKey && scenariosForCurrentYear.includes(appState.activeScenarioKey)) {
+                console.warn(`Selector value (${selector.value}) differs from activeScenarioKey (${appState.activeScenarioKey}). Forcing selector to active key.`);
+                selector.value = appState.activeScenarioKey;
+            }
+            console.log("Scenario selector updated. Current selection:", selector.value);
+        }
+
+        function updateCurrentYearAndScenarioInUI() {
+            const dashboardYearSpan = document.getElementById('dashboard-year');
+            const dashboardScenarioSpan = document.getElementById('dashboard-scenario');
+            const currentYearSpans = document.querySelectorAll('.current-year');
+            const currentScenarioSpans = document.querySelectorAll('.current-scenario');
+
+            const scenarioData = getCurrentScenarioData();
+
+            const yearToDisplay = scenarioData ? scenarioData.year : (appState.currentYear || new Date().getFullYear());
+            const scenarioNameToDisplay = scenarioData ? scenarioData.scenarioName : "Ninguno";
+
+            if (dashboardYearSpan) dashboardYearSpan.textContent = yearToDisplay;
+            if (dashboardScenarioSpan) dashboardScenarioSpan.textContent = scenarioNameToDisplay;
+
+            currentYearSpans.forEach(span => span.textContent = yearToDisplay);
+            currentScenarioSpans.forEach(span => span.textContent = scenarioNameToDisplay);
+        }
+
 
         function renderEmptyState() {
             console.log("Renderizando estado vacío...");
@@ -2252,7 +2319,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      },
                      tooltip: {
                          backgroundColor: hexToRgba(cardBg, 0.9), // Semi-transparent background from card BG
-                         titleColor: textColor, // Tooltip title color
+                         titleColor: textColor, // Tooltip title text color
                          bodyColor: textColor, // Tooltip body text color
                          borderColor: borderColor, borderWidth: 1, padding: 10, // Tooltip border
                          callbacks: {
