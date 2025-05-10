@@ -1354,6 +1354,28 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             }
         }
 
+        // --- Funciones de Utilidad para Gráficos (Movidas aquí) ---
+        function destroyChart(canvasId) {
+             const instance = window[`${canvasId}_instance`];
+             if (instance) {
+                instance.destroy();
+                window[`${canvasId}_instance`] = null;
+             }
+         }
+
+        function displayChartNoData(canvasId, show) {
+            const container = document.getElementById(canvasId)?.parentElement;
+            const noDataElement = container?.querySelector('.chart-no-data');
+            if (noDataElement) {
+                noDataElement.style.display = show ? 'block' : 'none';
+            }
+            const canvasElement = document.getElementById(canvasId);
+             if (canvasElement) {
+                 canvasElement.style.display = show ? 'none' : 'block'; // Hide canvas if no data
+             }
+        }
+
+
         // --- Actualización de la Interfaz (UI) ---
         function initUI() {
              const yearInput = document.getElementById('exercise-year');
@@ -3158,31 +3180,6 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              console.log(`Datos de gastos, ingresos y status borrados para escenario: ${key}.`);
              saveState();
              calculateAll(scenario);
-        }
-
-    
-
-function destroyChart(canvasId) {
-             const instance = window[`${canvasId}_instance`];
-             if (instance) {
-                instance.destroy();
-                window[`${canvasId}_instance`] = null;
-                // console.log(`Chart ${canvasId} destroyed.`);
-             }
-         }
-
-
-
-function displayChartNoData(canvasId, show) {
-            const container = document.getElementById(canvasId)?.parentElement;
-            const noDataElement = container?.querySelector('.chart-no-data');
-            if (noDataElement) {
-                noDataElement.style.display = show ? 'block' : 'none';
-            }
-            const canvasElement = document.getElementById(canvasId);
-             if (canvasElement) {
-                 canvasElement.style.display = show ? 'none' : 'block'; // Hide canvas if no data
-             }
         }
 
 </script>
