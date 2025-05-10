@@ -10,6 +10,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Librería Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- ******* FIX: destruye instancias de Chart.js de forma segura ******* -->
+<script>
+/**
+ * Destruye (si existe) la instancia de Chart asociada a un <canvas>.
+ * Evita errores "destroyChart is not defined" y fugas de memoria al recrear gráficos.
+ * @param {string} canvasId - id del elemento <canvas>
+ */
+function destroyChart(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    // Chart.js v3+ provee Chart.getChart(canvas) para obtener instancia existente
+    const chart = window.Chart && typeof Chart.getChart === 'function'
+        ? Chart.getChart(canvas)
+        : (canvas.chart || null);
+    if (chart && typeof chart.destroy === 'function') {
+        chart.destroy();
+    }
+}
+</script>
+<!-- ******* FIN FIX ******* -->
+
 <!-- Plugin doughnut 3D shadow -->
 <script>
 /* Plugin: doughnutShadow3D
