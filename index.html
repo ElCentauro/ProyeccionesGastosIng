@@ -2,6 +2,20 @@
 
 <html lang="es">
 <head>
+<!-- build: 09-May-25 v3 (early toNumber) -->
+<script>
+/* Early global toNumber to guarantee availability */
+window.toNumber = function toNumber(val){
+    if (typeof val === 'number') return val;
+    if (val === null || val === undefined) return 0;
+    let s = val.toString().trim().replace(/[$\s]/g, '').replace(/\./g, '');
+    s = s.replace(/,/g, '.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+};
+console.log('%c⚙️ Global toNumber injected (v3)','color:green');
+</script>
+
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <!-- Favicon -->
@@ -529,7 +543,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
     }
     const n = parseFloat(s);
     return isNaN(n)?0:n;
-  }
+  
+    window.toNumber = toNumber; // expose globally
+}
 
   function syncIPC(){
     const ipcVals = (appState?.settings?.ipcManual)||[];
@@ -538,7 +554,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         const ct = appState.settings.coefficientTypes[k];
         const n = (ct.name||k).toLowerCase();
         if(n.includes('ipc')){
-            ct.values = ipcVals.map(v=>parseFloat(v||0));
+            ct.values = ipcVals.map(v => window.toNumber(v || 0));
             ct.isDefault = true;
         }
     });
@@ -1226,7 +1242,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                   // --- MODIFICACIÓN FIX: Ensure coefValues is a valid array of 12 numbers (percentages) ---
                  const coefValuesRaw = coefficientTypes[coefTypeKey]?.values;
                  const coefPercentages = (Array.isArray(coefValuesRaw) && coefValuesRaw.length === 12)
-                                         ? coefValuesRaw.map(v => parseFloat(v || 0))
+                                         ? coefValuesRaw.map(v => window.toNumber(v || 0))
                                          : Array(12).fill(0); // Default to 0% increase
                  // --- END MODIFICACIÓN FIX ---
 
@@ -1240,7 +1256,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  detailOrder.forEach(detail => {
                       // Ensure data and status arrays exist before accessing them
                     const baseValues = Array.isArray(data.gastos[rubro].detailsData[detail]) && data.gastos[rubro].detailsData[detail].length === 12
-                                       ? data.gastos[rubro].detailsData[detail].map(v => parseFloat(v || 0))
+                                       ? data.gastos[rubro].detailsData[detail].map(v => window.toNumber(v || 0))
                                        : Array(12).fill(0);
 
                     const statusArray = (monthStatus.gastos && monthStatus.gastos[rubro] && Array.isArray(monthStatus.gastos[rubro][detail]) && monthStatus.gastos[rubro][detail].length === 12)
@@ -1308,7 +1324,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
                  detailOrder.forEach(detail => {
                       const baseValues = Array.isArray(data.ingresos[rubro].detailsData[detail]) && data.ingresos[rubro].detailsData[detail].length === 12
-                                         ? data.ingresos[rubro].detailsData[detail].map(v => parseFloat(v || 0))
+                                         ? data.ingresos[rubro].detailsData[detail].map(v => window.toNumber(v || 0))
                                          : Array(12).fill(0);
 
                      // Store BASE values in 'ingresoAjustado' for the detail table display
@@ -1366,7 +1382,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              // 3. Fondo Reserva
              // Ensure reserveFund values array is 12 elements (validated in initialize, but check again for safety)
               const reserveValues = Array.isArray(reserveFund?.values) && reserveFund.values.length === 12
-                                     ? reserveFund.values.map(v => parseFloat(v || 0))
+                                     ? reserveFund.values.map(v => window.toNumber(v || 0))
                                      : Array(12).fill(reserveFund?.type === 'fixed' ? 0 : 5);
 
              for (let i = 0; i < 12; i++) {
@@ -1393,7 +1409,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  const baseEnero = (calculated.cuotaRealBaseMes?.[0] || 0); // Usa el valor de Enero de la columna "Expensa Real ($/UF)"
                   // Ensure ipcManual snapshot is a valid array of 12 numbers (percentages)
                   const ipcSnapshot = (Array.isArray(calculated.ipcManual) && calculated.ipcManual.length === 12)
-                                      ? calculated.ipcManual.map(v => parseFloat(v || 0))
+                                      ? calculated.ipcManual.map(v => window.toNumber(v || 0))
                                       : Array(12).fill(0); // Default to 0%
 
                  const ipcEnero  = ipcSnapshot[0];
@@ -1460,7 +1476,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  // --- MODIFICACIÓN FIX: Ensure coefValues is a valid array of 12 numbers (percentages) ---
                 const coefValuesRaw = currentCoefficientType?.values;
                 const coefPercentages = (Array.isArray(coefValuesRaw) && coefValuesRaw.length === 12)
-                                        ? coefValuesRaw.map(v => parseFloat(v || 0))
+                                        ? coefValuesRaw.map(v => window.toNumber(v || 0))
                                         : Array(12).fill(0); // Default to 0% increase
                 // --- END MODIFICACIÓN FIX ---
 
@@ -1471,7 +1487,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                                             : Array(12).fill('Estimado');
                     // Use the *base* data values from scenarioData.data as the starting point for REAL months
                     const currentDataValues = Array.isArray(data.gastos[rubro].detailsData[detail]) && data.gastos[rubro].detailsData[detail].length === 12
-                                            ? data.gastos[rubro].detailsData[detail].map(v => parseFloat(v || 0))
+                                            ? data.gastos[rubro].detailsData[detail].map(v => window.toNumber(v || 0))
                                             : Array(12).fill(0);
 
 
@@ -1683,7 +1699,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              // Use the IPC snapshot stored in 'calculated' for consistency
              // --- MODIFICACIÓN FIX: Ensure IPC snapshot is a valid array of 12 numbers (percentages) ---
              const ipcSnapshot = (Array.isArray(calculated.ipcManual) && calculated.ipcManual.length === 12)
-                                 ? calculated.ipcManual.map(v => parseFloat(v || 0))
+                                 ? calculated.ipcManual.map(v => window.toNumber(v || 0))
                                  : Array(12).fill(0); // Default to 0%
              // --- END MODIFICACIÓN FIX ---
 
@@ -2276,7 +2292,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              // Ensure values array has 12 elements
               const reserveValues = Array.isArray(reserveFundData.values) && reserveFundData.values.length === 12
-                                     ? reserveFundData.values.map(v => parseFloat(v || 0))
+                                     ? reserveFundData.values.map(v => window.toNumber(v || 0))
                                      : Array(12).fill(uiSelectedType === 'percent' ? 5 : 0); // Default based on UI selected type
 
 
@@ -2504,7 +2520,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              // Ensure values array exists and has 12 elements (percentages)
              const values = Array.isArray(typeData.values) && typeData.values.length === 12
-                             ? typeData.values.map(v => parseFloat(v || 0)) // Ensure values are numbers
+                             ? typeData.values.map(v => window.toNumber(v || 0)) // Ensure values are numbers
                              : Array(12).fill(0); // Default to 0%
 
              MONTHS.forEach((month, index) => {
@@ -2576,7 +2592,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              // Ensure IPC array exists and has 12 elements (percentages)
              const ipcValues = Array.isArray(appState.settings.ipcManual) && appState.settings.ipcManual.length === 12
-                                ? appState.settings.ipcManual.map(v => parseFloat(v || 0)) // Ensure numbers
+                                ? appState.settings.ipcManual.map(v => window.toNumber(v || 0)) // Ensure numbers
                                 : Array(12).fill(0); // Default to 0%
 
 
@@ -3744,7 +3760,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              // Ensure values array has 12 elements
              const reserveValues = Array.isArray(reserveFundData.values) && reserveFundData.values.length === 12
-                                     ? reserveFundData.values.map(v => parseFloat(v || 0))
+                                     ? reserveFundData.values.map(v => window.toNumber(v || 0))
                                      : Array(12).fill(reserveFundData.type === 'percent' ? 5 : 0); // Default based on type
 
 
@@ -3919,7 +3935,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                         if (!typeData) return; // Skip if missing data
                         // Ensure values array is 12 elements (percentages)
                          const values = (Array.isArray(typeData.values) && typeData.values.length === 12)
-                                        ? typeData.values.map(v => parseFloat(v || 0))
+                                        ? typeData.values.map(v => window.toNumber(v || 0))
                                         : Array(12).fill(key === 'None' ? 1 : 0); // Default 'None' to 1, others to 0%
 
                         coefRows.push([typeData.name, ...values]);
@@ -3966,7 +3982,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  const resumenHeaders = ["Concepto", ...FULL_MONTHS, "Total Anual"];
                  const resumenRows = [];
                  const addRow = (label, values, format, isPercentage = false, isUF = false) => { // Renamed isPercent to isPercentage
-                    const numericValues = Array.isArray(values) ? values.map(v => parseFloat(v || 0)) : [];
+                    const numericValues = Array.isArray(values) ? values.map(v => window.toNumber(v || 0)) : [];
                     const annual = numericValues.reduce((a, b) => a + (b || 0), 0);
                     const rowData = [label, ...numericValues, annual];
                     const lastRowIndex = resumenRows.length; // 0-based index in resumenRows array BEFORE push
@@ -3999,7 +4015,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  resumenRows.push(["--- FONDO RESERVA ---"]);
                  // Ensure reserveFund object and values exist/are valid
                  const reserveValues = (Array.isArray(reserveFund?.values) && reserveFund.values.length === 12)
-                                     ? reserveFund.values.map(v => parseFloat(v || 0))
+                                     ? reserveFund.values.map(v => window.toNumber(v || 0))
                                      : Array(12).fill(reserveFund?.type === 'fixed' ? 0 : 5); // Default based on type
                  const reserveType = reserveFund?.type === 'fixed' ? 'fixed' : 'percent'; // Default to percent
                  const reserveLabel = `Fondo Reserva Config (${reserveType === 'percent' ? '%' : '$'})`;
