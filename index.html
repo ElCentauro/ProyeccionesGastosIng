@@ -1765,64 +1765,127 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  destroyChart('participacionIngresosChart'); displayChartNoData('participacionIngresosChart', true);
                  return;
              }
+
              const { calculated } = scenarioData;
              const labels = MONTHS;
+
+             // Get current theme colors dynamically
              const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
              const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
              const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
              const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
              const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-             const chartColors = [
+
+
+             const chartColors = [ // Define a consistent palette
                 primaryColor, accentColor, '#ffc107', '#6f42c1', '#fd7e14', '#17a2b8',
-                '#dc3545', secondaryColor, '#20c997', '#0d6efd', '#198754', '#adb5bd'
+                '#dc3545', secondaryColor, '#20c997', '#0d6efd', '#198754', '#adb5bd' // More colors
              ];
 
+             // --- Evolutivo Expensa Chart (Line) ---
              destroyChart('evolutivoCuotaChart');
              const ctxEvolutivo = document.getElementById('evolutivoCuotaChart')?.getContext('2d');
-             const evolutivoHasData = (calculated.cuotaSobreGastosMes?.some(v => (v || 0) !== 0) ?? false) ||
-                                       (calculated.cuotaRealBaseMes?.some(v => (v || 0) !== 0) ?? false) ||
-                                       (calculated.cuotaIpcMes?.some(v => (v || 0) !== 0) ?? false);
+             const evolutivoHasData = (calculated.cuotaSobreGastosMes?.some(v => v !== 0) ?? false) || (calculated.cuotaRealBaseMes?.some(v => v !== 0) ?? false);
              displayChartNoData('evolutivoCuotaChart', !evolutivoHasData);
+
              if (ctxEvolutivo && evolutivoHasData) {
                 window.evolutivoCuotaChart_instance = new Chart(ctxEvolutivo, {
                     type: 'line',
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'Cuota s/Gtos ($/UF)', data: calculated.cuotaSobreGastosMes.map(v => (v || 0)), borderColor: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.1), tension: 0.2, fill: true, yAxisID: 'yCuota', pointRadius: 3, pointHoverRadius: 6, pointHitRadius: 10, pointBorderColor: 'white', pointBackgroundColor: primaryColor },
-                            { label: 'Expensa Real ($/UF)', data: calculated.cuotaRealBaseMes.map(v => (v || 0)), borderColor: accentColor, backgroundColor: hexToRgba(accentColor, 0.1), tension: 0.2, fill: true, yAxisID: 'yCuota', pointRadius: 3, pointHoverRadius: 6, pointHitRadius: 10, pointBorderColor: 'white', pointBackgroundColor: accentColor },
-                             { label: 'Cuota IPC ($/UF)', data: calculated.cuotaIpcMes.map(v => (v || 0)), borderColor: secondaryColor, backgroundColor: hexToRgba(secondaryColor, 0.1), tension: 0.2, fill: false, borderDash: [5, 5], yAxisID: 'yCuota', pointRadius: 3, pointHoverRadius: 6, pointHitRadius: 10, pointBorderColor: 'white', pointBackgroundColor: secondaryColor }
+                            { // Cuota s/Gtos (Calculated from expenses + reserve)
+                                label: 'Cuota s/Gtos ($)',
+                                data: calculated.cuotaSobreGastosMes,
+                                borderColor: primaryColor,
+                                backgroundColor: hexToRgba(primaryColor, 0.1),
+                                tension: 0.2,
+                                fill: true,
+                                yAxisID: 'yCuota'
+                            },
+                            { // Expensa Real Base (From Ingresos base data) - MODIFICADO
+                                label: 'Expensa Real Base ($)',
+                                data: calculated.cuotaRealBaseMes,
+                                borderColor: accentColor,
+                                backgroundColor: hexToRgba(accentColor, 0.1),
+                                tension: 0.2,
+                                fill: true,
+                                yAxisID: 'yCuota' // Same axis for direct comparison
+                            },
+                             { // Cuota IPC (Calculated based on Cuota s/Gtos and IPC ref)
+                                label: 'Cuota IPC ($)',
+                                data: calculated.cuotaIpcMes,
+                                borderColor: secondaryColor, // Use secondary color
+                                backgroundColor: hexToRgba(secondaryColor, 0.1),
+                                tension: 0.2,
+                                fill: false, // Don't fill this one to avoid clutter
+                                borderDash: [5, 5], // Dashed line for reference value
+                                yAxisID: 'yCuota' // Same axis
+                            }
                         ]
                     },
                     options: commonChartOptions('yCuota')
                  });
              }
 
+
+             // --- Participación Gastos Chart (Doughnut) ---
              destroyChart('participacionGastosChart');
              const ctxGastos = document.getElementById('participacionGastosChart')?.getContext('2d');
-             const activeGastoRubros = ((appState.settings && appState.settings.rubros && appState.settings.rubros.gastos) ? appState.settings.rubros.gastos : []).filter(rubro => (calculated.annualTotals?.gastos?.[rubro] || 0) > 0);
+             // Filter labels based on *global* settings first, then check for > 0 value
+             // Filter out zero values before mapping to labels/data
+             const activeGastoRubros = (appState.settings.rubros?.gastos || []).filter(rubro =>
+                  (calculated.annualTotals?.gastos?.[rubro] || 0) > 0
+             );
              const gastoLabels = activeGastoRubros;
-             const gastoData = activeGastoRubros.map(rubro => calculated.annualTotals.gastos[rubro] || 0);
-             displayChartNoData('participacionGastosChart', gastoData.length === 0 || gastoData.every(d => d === 0));
-             if (ctxGastos && gastoData.length > 0 && gastoData.some(d => d > 0)) {
+             const gastoData = activeGastoRubros.map(rubro => calculated.annualTotals.gastos[rubro]);
+
+             displayChartNoData('participacionGastosChart', gastoData.length === 0);
+
+             if (ctxGastos && gastoData.length > 0) {
                  window.participacionGastosChart_instance = new Chart(ctxGastos, {
-                     type: 'doughnut',
-                     data: { labels: gastoLabels, datasets: [{ data: gastoData, backgroundColor: generateColors(gastoData.length, chartColors, 0.8), borderColor: cardBg, borderWidth: 2, hoverOffset: 8 }] },
-                     options: pieChartOptions('Gasto Anual')
+                     type: 'doughnut', // Changed to doughnut
+                     data: {
+                         labels: gastoLabels,
+                         datasets: [{
+                             data: gastoData,
+                             backgroundColor: generateColors(gastoData.length, chartColors, 0.8), // Use helper
+                             borderColor: cardBg,
+                             borderWidth: 2
+                         }]
+                     },
+                     options: pieChartOptions('Gasto Anual') // Use pie chart options (works for doughnut)
                  });
              }
 
+
+             // --- Participación Ingresos Chart (Doughnut) ---
              destroyChart('participacionIngresosChart');
              const ctxIngresos = document.getElementById('participacionIngresosChart')?.getContext('2d');
-              const activeIngresoRubros = ((appState.settings && appState.settings.rubros && appState.settings.rubros.ingresos) ? appState.settings.rubros.ingresos : []).filter(rubro => (calculated.annualTotals?.ingresos?.[rubro] || 0) > 0);
+             // Filter labels based on *global* settings first, then check for > 0 value
+              // Filter out zero values before mapping to labels/data
+             const activeIngresoRubros = (appState.settings.rubros?.ingresos || []).filter(rubro =>
+                  (calculated.annualTotals?.ingresos?.[rubro] || 0) > 0
+              );
              const ingresoLabels = activeIngresoRubros;
-             const ingresoData = activeIngresoRubros.map(rubro => calculated.annualTotals.ingresos[rubro] || 0);
-             displayChartNoData('participacionIngresosChart', ingresoData.length === 0 || ingresoData.every(d => d === 0));
-             if (ctxIngresos && ingresoData.length > 0 && ingresoData.some(d => d > 0)) {
+             const ingresoData = activeIngresoRubros.map(rubro => calculated.annualTotals.ingresos[rubro]);
+
+             displayChartNoData('participacionIngresosChart', ingresoData.length === 0);
+
+             if (ctxIngresos && ingresoData.length > 0) {
                  window.participacionIngresosChart_instance = new Chart(ctxIngresos, {
-                     type: 'doughnut',
-                     data: { labels: ingresoLabels, datasets: [{ data: ingresoData, backgroundColor: generateColors(ingresoData.length, chartColors.slice().reverse(), 0.8), borderColor: cardBg, borderWidth: 2, hoverOffset: 8 }] },
-                     options: pieChartOptions('Ingreso Anual')
+                     type: 'doughnut', // Changed to doughnut
+                     data: {
+                         labels: ingresoLabels,
+                         datasets: [{
+                             data: ingresoData,
+                             // Use different colors or reverse order from gastos chart
+                             backgroundColor: generateColors(ingresoData.length, chartColors.slice().reverse(), 0.8), // Use helper
+                             borderColor: cardBg,
+                             borderWidth: 2
+                         }]
+                     },
+                     options: pieChartOptions('Ingreso Anual') // Use pie chart options
                  });
              }
          }
@@ -1835,59 +1898,121 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             return colors;
          }
 
-        function commonChartOptions(mainYAxisID = 'y') {
+        function commonChartOptions(mainYAxisID = 'y', additionalScales = {}) {
             const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
             const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-             Chart.defaults.backgroundColor = 'transparent';
-             const units = { yCuota: ' $/UF' };
-             return {
-                 responsive: true, maintainAspectRatio: false,
-                 scales: {
-                    [mainYAxisID]: { beginAtZero: true, ticks: { color: textColor, padding: 10, callback: function(value, index, values) { let formatted = formatCurrency(value || 0).replace(",00", ""); if (units[mainYAxisID]) formatted += units[mainYAxisID]; return formatted; } }, title: { display: true, text: mainYAxisID === 'yCuota' ? 'Valor por UF' : '', color: textColor, font: { size: 14, weight: 'bold' } }, grid: { color: borderColor, drawTicks: false, drawOnChartArea: true, drawTicks: true}, border: { color: borderColor, display: true, width: 1} },
-                    x: { ticks: { color: textColor, padding: 10 }, grid: { display: false, drawTicks: true}, border: { color: borderColor, display: true, width: 1 } },
-                 },
-                 plugins: {
-                     legend: { position: 'bottom', labels: { color: textColor, boxWidth: 15, padding: 20 } },
-                     tooltip: { backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim(), 0.9), titleColor: textColor, bodyColor: textColor, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim(), borderWidth: 1, padding: 10,
-                         callbacks: {
-                             title: tooltipItems => tooltipItems[0]?.label ? FULL_MONTHS[MONTHS.indexOf(tooltipItems[0].label)] || tooltipItems[0].label : '',
-                             label: context => { let label = context.dataset.label || ''; if (label) label += ': '; if (context.parsed.y !== null) { let formatted = formatCurrency(context.parsed.y); const scaleId = context.dataset.yAxisID || mainYAxisID; if (units[scaleId]) formatted += units[scaleId]; label += formatted; } return label; }
-                         }
-                     }
-                 },
-                 interaction: { mode: 'index', intersect: false },
-             };
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    [mainYAxisID]: {
+                        beginAtZero: true,
+                        ticks: { color: textColor, padding: 10, callback: value => formatCurrency(value).replace(",00", "") },
+                        grid: { color: borderColor, drawTicks: false }, // Hide grid ticks
+                        border: { color: borderColor } // Axis line color
+                    },
+                    x: {
+                        ticks: { color: textColor, padding: 10 },
+                        grid: { display: false }, // Hide vertical grid lines for cleaner look
+                        border: { color: borderColor }
+                    },
+                    ...additionalScales // Include any additional axes passed in
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: textColor,
+                            boxWidth: 15,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: hexToRgba(getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim(), 0.9),
+                        titleColor: textColor,
+                        bodyColor: textColor,
+                        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim(),
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                             title: tooltipItems => tooltipItems[0]?.label ? FULL_MONTHS[MONTHS.indexOf(tooltipItems[0].label)] : '',
+                             label: context => {
+                                 let label = context.dataset.label || '';
+                                 if (label) label += ': ';
+                                 if (context.parsed.y !== null) label += formatCurrency(context.parsed.y);
+                                 return label;
+                            }
+                        }
+                    }
+                },
+                interaction: { mode: 'index', intersect: false },
+            };
          }
 
         function pieChartOptions(labelPrefix = '') {
              const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
              const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
              const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-             const baseFontSize = parseFloat(getComputedStyle(document.body).fontSize);
-             const legendFontSize = Math.round(baseFontSize * 0.95);
-              const plugins = ['doughnutShadow3D'];
-              if (!Chart.registry.plugins.get('doughnutShadow3D')) {
-                  plugins.splice(plugins.indexOf('doughnutShadow3D'), 1);
-             }
+             const baseFontSize = parseFloat(getComputedStyle(document.body).fontSize); // Get actual computed font size
+             const legendFontSize = Math.round(baseFontSize * 1.2); // Increase by 20%
+
+
              return {
-                 responsive: true, maintainAspectRatio: false,
+                 responsive: true,
+                 maintainAspectRatio: false,
                  plugins: {
-                      plugin: plugins,
-                     legend: { position: 'right', labels: { color: textColor, boxWidth: 15, padding: 15, font: { size: legendFontSize },
-                             generateLabels: chart => { const data = chart.data; if (!data.labels.length || !data.datasets.length) return []; const { labels } = data; const dataset = data.datasets[0]; const total = dataset.data.reduce((a, b) => (a || 0) + (b || 0), 0);
-                                return labels.map((label, i) => { const value = dataset.data[i] || 0; const percentage = total > 0 ? ((value / total) * 100).toFixed(1).replace(/\.0$/, '') + '%' : '0%'; const textLabel = `${label} (${percentage})`;
-                                    return { text: textLabel, fillStyle: Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor[i] : dataset.backgroundColor, strokeStyle: dataset.borderColor || (Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor[i] : dataset.backgroundColor), lineWidth: dataset.borderWidth || 0, hidden: chart.getDatasetMeta(0)?.data[i]?.hidden || (value === 0 && total !== 0), index: i, datasetIndex: 0 }; });
+                     legend: {
+                         position: 'right',
+                         labels: {
+                            color: textColor,
+                            boxWidth: 15,
+                            padding: 15,
+                            font: { // Apply font settings here
+                                 size: legendFontSize, // Apply increased size
+                            },
+                             generateLabels: chart => {
+                                const data = chart.data;
+                                if (!data.labels.length || !data.datasets.length) return [];
+                                const { labels } = data; const dataset = data.datasets[0];
+                                const total = dataset.data.reduce((a, b) => a + b, 0);
+                                return labels.map((label, i) => {
+                                    const value = dataset.data[i];
+                                     // --- MODIFICADO: Generate label text without dashed description ---
+                                     const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0.0%';
+                                     const textLabel = `${label} (${percentage})`; // Format: "Label (Percentage)"
+
+                                    return {
+                                        text: textLabel, // Use the custom text label
+                                        fillStyle: dataset.backgroundColor[i],
+                                        strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
+                                        lineWidth: dataset.borderWidth || 0,
+                                        // Note: Chart.js automatically handles hiding legend entries for hidden data
+                                        hidden: chart.getDataVisibility(i) || value === 0, // Hide if data is zero as well
+                                        index: i
+                                    };
+                                });
                              }
                          }
                      },
-                     tooltip: { backgroundColor: hexToRgba(cardBg, 0.9), titleColor: textColor, bodyColor: textColor, borderColor: borderColor, borderWidth: 1, padding: 10,
+                     tooltip: {
+                         backgroundColor: hexToRgba(cardBg, 0.9),
+                         titleColor: textColor, bodyColor: textColor,
+                         borderColor: borderColor, borderWidth: 1, padding: 10,
                          callbacks: {
-                            label: context => { let label = context.label || ''; if (context.parsed !== null) { const total = context.dataset.data.reduce((a, b) => (a||0) + (b||0), 0); const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1).replace(/\.0$/, '') + '%' : '0%'; label = `${label}: ${formatCurrency(context.parsed || 0)} (${percentage})`; } return label; },
-                            title: context => { return context[0]?.label ? (labelPrefix || '') : ''; }
+                            label: context => {
+                                 let label = context.label || ''; // context.label is the original label text
+                                 if (context.parsed !== null) {
+                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                     const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) + '%' : '0.0%';
+                                     // Show original label + formatted value and percentage in tooltip
+                                     label = `${label}: ${formatCurrency(context.parsed)} (${percentage})`;
+                                 }
+                                 return label;
+                            }
                          }
                      }
                  },
-                 cutout: '30%'
+                 cutout: '30%' // Define cutout for Doughnut chart
              };
          }
 
