@@ -777,6 +777,12 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
         // --- Inicialización ---
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Limpieza de nodos de texto huérfanos (código visible encima del encabezado)
+            while (document.body.firstChild && document.body.firstChild.nodeType === Node.TEXT_NODE) {
+                // Elimina cualquier texto suelto que quede antes de <header>
+                document.body.removeChild(document.body.firstChild);
+            }
+
             console.log(`DOM Cargado. Inicializando App ${STORAGE_KEY}...`);
             loadState();
             initTheme();
