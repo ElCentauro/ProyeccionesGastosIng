@@ -105,8 +105,10 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
             /* >>> COLORES REAL/ESTIMADO <<< */
             --real-month-bg: #d1f7d9; /* Light, fresh green */
-            --estimated-month-bg: #fff3cd; /* Soft Yellow */
-             --estimated-month-border: #ffda6a; /* Yellow border for input */
+            --real-month-text: #0f5132; /* Dark green text for light green bg */
+            --estimated-month-bg: #ffe8d6; /* Soft Orange/Peach */
+            --estimated-month-text: #854408; /* Dark orange/brown text for light orange bg */
+            --estimated-month-border: #ffda6a; 
         }
 
         body.dark-mode {
@@ -147,9 +149,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
             /* >>> COLORES REAL/ESTIMADO OSCURO <<< */
             --real-month-bg: #1c4a2b; /* Darker Green */
-            --estimated-month-bg: #5a4a1d; /* Dark Yellow/Brown */
-            --estimated-month-border: #f0b41e; /* Brighter Yellow border for input */
+            --real-month-text: #a3cfbb; /* Lighter green text for dark green bg */
+            --estimated-month-bg: #7c3e00; /* Dark Orange */
+            --estimated-month-text: #ffc999; /* Lighter orange text for dark orange bg */
+            --estimated-month-border: #f0b41e; 
         }
+        /* Cell specific styles */
+        td.real-month-cell { background-color: var(--real-month-bg) !important; color: var(--real-month-text) !important; }
+        td.estimated-month-cell { background-color: var(--estimated-month-bg) !important; color: var(--estimated-month-text) !important; }
 
         /* --- Estilos Generales --- */
         .container { width: 95%; max-width: 1700px; margin: 0 auto; padding: 25px 20px; }
@@ -163,7 +170,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
         button {
             padding: 12px 22px;
-            border: 1px solid transparent; /* Added border for consistency */
+            border: 1px solid transparent;
             border-radius: 6px;
             background-color: var(--primary-color);
             color: var(--button-text);
@@ -173,11 +180,11 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease, box-shadow 0.2s ease;
             display: inline-flex;
             align-items: center;
-            justify-content: center; /* Center content */
+            justify-content: center;
             gap: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            line-height: 1.5; /* Ensure consistent height */
-            text-align: center; /* Ensure text aligns center */
+            line-height: 1.5; 
+            text-align: center; 
         }
         button:hover {
             background-color: var(--primary-color-darker);
@@ -197,7 +204,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             transform: none;
             box-shadow: none;
         }
-        button i { margin-right: 2px; /* Keep small margin */ }
+        button i { margin-right: 2px; }
+        .header-actions button { padding: 8px 12px; font-size: 0.9rem; } /* Para botones de localStorage */
+
 
         /* Button variants */
         .button-primary { background-color: var(--primary-color); border-color: var(--primary-color); color: var(--button-text); }
@@ -223,7 +232,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             border-bottom: 1px solid var(--border-color);
         }
         header .container { display: flex; justify-content: space-between; align-items: center; padding-top: 0; padding-bottom: 0; }
-        .app-title { font-size: 1.6rem; font-weight: 700; color: var(--primary-color); }
+        .app-title { font-size: 1.6rem; font-weight: 700; color: var(--primary-color); margin-right: auto; /* Empuja otros elementos a la derecha */}
+        .header-actions { display: flex; align-items: center; gap: 15px; }
         #theme-toggle { font-size: 1.3rem; background: none; border: none; color: var(--text-color); cursor: pointer; padding: 5px; border-radius: 50%; transition: background-color 0.2s;}
         #theme-toggle:hover { background-color: var(--table-row-hover); }
 
@@ -247,7 +257,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             font-weight: 600;
             border-radius: 6px 6px 0 0;
             transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-            display: inline-flex; /* Align icon and text */
+            display: inline-flex; 
             align-items: center;
             gap: 8px;
         }
@@ -258,7 +268,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         .tab-link.active {
             background-color: var(--card-bg);
             border-color: var(--border-color);
-            border-bottom-color: var(--card-bg); /* Hide bottom border part */
+            border-bottom-color: var(--card-bg); 
             color: var(--primary-color);
             font-weight: 700;
         }
@@ -300,7 +310,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         }
         input[type="number"] { text-align: right; -moz-appearance: textfield; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { margin: 0; }
-        input[type="file"] { padding: 8px; line-height: 1.5; } /* Adjust file input padding */
+        input[type="file"] { padding: 8px; line-height: 1.5; } 
         .input-group { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .input-group label { margin-bottom: 0; font-weight: normal;}
         .input-group input[type="radio"] { width: auto; margin-right: 5px; }
@@ -325,12 +335,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         }
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover { background-color: var(--table-row-hover); }
-        th:first-child, td:first-child { border-left: none; padding-left: 20px; /* More padding for first col */ }
-        th:last-child, td:last-child { border-right: none; padding-right: 20px; /* More padding for last col */}
-
-        /* Cell specific styles */
-        td.real-month-cell { background-color: var(--real-month-bg) !important; /* Use important to override hover */ }
-        td.estimated-month-cell { background-color: var(--estimated-month-bg) !important; }
+        th:first-child, td:first-child { border-left: none; padding-left: 20px; }
+        th:last-child, td:last-child { border-right: none; padding-right: 20px; }
+        
         td.number-cell { text-align: right; font-variant-numeric: tabular-nums; }
         td.input-cell input { width: 100px; padding: 6px; font-size: 0.9rem; text-align: right; }
         td.input-cell input:disabled { background-color: transparent; border: none; color: var(--disabled-text);}
@@ -340,28 +347,25 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         .collapsible-table tbody tr.rubro-total-row { font-weight: bold; cursor: pointer; background-color: var(--expandable-row-bg); transition: background-color 0.2s; }
         .collapsible-table tbody tr.rubro-total-row:hover { background-color: var(--clickable-row-hover); }
         .collapsible-table tbody tr.rubro-total-row td:first-child::before {
-            content: '\f078'; /* fa-chevron-down */
+            content: '\f078'; 
             font-family: 'Font Awesome 6 Free'; font-weight: 900; margin-right: 12px; display: inline-block; transition: transform 0.2s ease-in-out; color: var(--primary-color);
         }
         .collapsible-table tbody tr.rubro-total-row.collapsed td:first-child::before { transform: rotate(-90deg); }
         .collapsible-table tbody tr.detail-row { display: table-row; background-color: var(--card-bg); transition: background-color 0.3s; }
         .collapsible-table tbody tr.detail-row.hidden { display: none; }
         .collapsible-table tbody tr.detail-row td { font-size: 0.85rem; color: var(--secondary-color); border-color: var(--border-color); }
-        .collapsible-table tbody tr.detail-row td:first-child { padding-left: 40px; /* Indent details more */ }
+        .collapsible-table tbody tr.detail-row td:first-child { padding-left: 40px; }
         body.dark-mode .collapsible-table tbody tr.detail-row { background-color: #353535; }
         .collapsible-table tfoot tr { font-weight: bold; background-color: var(--table-header-bg); border-top: 2px solid var(--border-color); }
 
-         /* Styles for Group/Ungroup All buttons */
         .table-actions {
             margin-bottom: 15px;
              display: flex;
-             justify-content: flex-end; /* Align buttons to the right */
+             justify-content: flex-end; 
              gap: 10px;
              flex-wrap: wrap;
         }
 
-
-        /* --- Componentes UI Específicos --- */
         #dashboard-summary { border-collapse: separate; border-spacing: 0; }
         #dashboard-summary th, #dashboard-summary td { text-align: center; white-space: normal; }
         #dashboard-summary tbody td, #dashboard-summary tfoot td { padding: 10px 8px; }
@@ -371,7 +375,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             margin-top: 35px; padding: 30px;
             background-color: var(--card-bg); border-radius: 8px;
             box-shadow: 0 4px 12px var(--shadow-color);
-            position: relative; min-height: 200px; /* Adjusted min height */
+            position: relative; min-height: 200px; 
         }
         .chart-container canvas { max-width: 100%; height: 380px !important; }
         .chart-no-data { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--secondary-color); font-style: italic; font-size: 1.1rem; text-align: center; }
@@ -386,11 +390,11 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         #file-upload-area i.fa-file-excel { font-size: 3rem; margin-bottom: 10px; color: var(--accent-color); }
         #file-upload-feedback { margin-top: 15px; font-weight: bold; white-space: pre-wrap; font-size: 0.95rem; min-height: 2em; }
 
-        #reserve-fund-panel { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px;} /* MODIFICADO: Usar grid como IPC */
-        #reserve-fund-panel .month-config { /* Removed flex styles, grid handles layout */ padding: 0; border-radius: 0; background-color: transparent; transition: none; }
+        #reserve-fund-panel { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px;}
+        #reserve-fund-panel .month-config { padding: 0; border-radius: 0; background-color: transparent; transition: none; }
         #reserve-fund-panel .month-config label { width: 100%; margin-bottom: 5px; font-weight: 600;}
         #reserve-fund-panel .month-config input { width: 100%; }
-        #reserve-fund-panel .month-config span { margin-left: 5px; color: var(--secondary-color); font-size: 0.9em; } /* Style the unit */
+        #reserve-fund-panel .month-config span { margin-left: 5px; color: var(--secondary-color); font-size: 0.9em; }
 
 
         .config-section {
@@ -408,30 +412,29 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         .management-list li select { width: 200px; font-size: 0.88rem; padding: 6px 8px; flex-shrink: 0; }
         .management-list li button { flex-shrink: 0; }
 
-         /* Styles for the NEW Coefficient Editor */
          #coefficient-editor { margin-top: 25px; }
          #coefficient-editor h4 { margin-bottom: 15px;}
          #coefficient-values-editor {
              display: grid;
-             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Similar grid to IPC */
+             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
              gap: 20px;
-             padding: 20px; /* Add padding */
-             border: 1px solid var(--border-color); /* Add border */
-             border-radius: 6px; /* Add border-radius */
-             background-color: var(--bg-color); /* Background like other lists/panels */
+             padding: 20px; 
+             border: 1px solid var(--border-color); 
+             border-radius: 6px; 
+             background-color: var(--bg-color); 
          }
          body.dark-mode #coefficient-values-editor { background-color: #3a3f44; }
 
-         #coefficient-values-editor .form-group { margin-bottom: 0; } /* Adjust form-group margin inside grid */
-         #coefficient-values-editor .form-group label { margin-bottom: 5px; font-weight: 600; width: 100%;} /* Adjust label */
-         #coefficient-values-editor .form-group input { width: 100%; max-width: none; } /* Allow input to fill grid cell */
-         #coefficient-values-editor .text-muted { grid-column: 1 / -1; text-align: center; padding: 20px; } /* Center and span info message */
+         #coefficient-values-editor .form-group { margin-bottom: 0; } 
+         #coefficient-values-editor .form-group label { margin-bottom: 5px; font-weight: 600; width: 100%;} 
+         #coefficient-values-editor .form-group input { width: 100%; max-width: none; } 
+         #coefficient-values-editor .text-muted { grid-column: 1 / -1; text-align: center; padding: 20px; } 
 
 
         /* --- Snackbar --- */
         #snackbar {
             visibility: hidden; min-width: 300px; max-width: 90%;
-            background-color: var(--success-color); /* Default to success */
+            background-color: var(--success-color); 
             color: var(--button-text); text-align: center;
             border-radius: 6px; padding: 18px 25px; position: fixed; z-index: 1001;
             left: 50%; transform: translateX(-50%); bottom: 30px;
@@ -462,33 +465,35 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              .tabs { justify-content: flex-start; }
              .tab-link { padding: 10px 18px; font-size: 0.95rem;}
              table { font-size: 0.88rem; } th,td {padding: 10px 12px;}
-             .management-list li select { width: 150px; } /* Reduce select width */
+             .management-list li select { width: 150px; } 
         }
         @media (max-width: 768px) {
             body { line-height: 1.6; }
             .app-title { font-size: 1.3rem;} #theme-toggle { font-size: 1.1rem;}
+            .header-actions { gap: 8px;} .header-actions button {padding: 6px 8px; font-size: 0.8rem;}
             .chart-container { padding: 20px;} .chart-container canvas { height: 280px !important; }
             .input-group { flex-direction: column; align-items: stretch; gap: 10px;}
             .input-small { margin-left: 0; margin-top: 8px; width: 100%; }
-            /* Adjust Reserve Fund and Coefficient Editor grid columns */
             #reserve-fund-panel, #coefficient-values-editor, #ipc-inputs { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;}
             #reserve-fund-panel .month-config label { width: 100%; text-align: left; margin-bottom: 5px; }
             #reserve-fund-panel .month-config input { width: 100%; }
-            table { font-size: 0.85rem; } th, td { padding: 9px 8px; white-space: normal; } /* Allow wrap */
+            table { font-size: 0.85rem; } th, td { padding: 9px 8px; white-space: normal; } 
             th:first-child, td:first-child { padding-left: 15px; }
             th:last-child, td:last-child { padding-right: 15px; }
             td.input-cell input { width: 80px; padding: 5px; }
             .management-list li { flex-wrap: wrap; gap: 8px; }
-            .management-list li span { flex-basis: 100%; margin-right: 0; } /* Name takes full width */
-            .management-list li select { width: calc(100% - 50px); margin-top: 5px; } /* Select almost full width */
-            .management-list li button { margin-left: auto; } /* Push button right */
+            .management-list li span { flex-basis: 100%; margin-right: 0; } 
+            .management-list li select { width: calc(100% - 50px); margin-top: 5px; } 
+            .management-list li button { margin-left: auto; } 
             button { font-size: 0.95rem; padding: 10px 18px;}
             .tabs { gap: 2px; }
             .tab-link { padding: 8px 10px; font-size: 0.85rem;}
              .table-actions { justify-content: center; }
         }
         @media (max-width: 576px) {
-            h1 { font-size: 1.7rem; } .app-title { display: none; } header .container { justify-content: flex-end; }
+            h1 { font-size: 1.7rem; } 
+            .app-title { font-size: 1.2rem; } 
+            header .container { justify-content: space-between; } 
             .tab-link { padding: 8px 10px; font-size: 0.85rem;}
             th, td { padding: 8px 6px; }
             th:first-child, td:first-child { padding-left: 10px; }
@@ -497,8 +502,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             #snackbar { min-width: 90%; bottom: 20px; font-size: 1rem; padding: 15px 20px; }
             #snackbar.show { bottom: 40px; }
             #file-upload-area { padding: 30px; }
-            .management-list li select { width: 100%; } /* Select full width on smallest screens */
-             /* Adjust Reserve Fund and Coefficient Editor grid columns */
+            .management-list li select { width: 100%; } 
              #reserve-fund-panel, #coefficient-values-editor, #ipc-inputs { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;}
         }
     </style>
@@ -507,7 +511,12 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
     <header>
         <div class="container">
             <span class="app-title">Proyección Expensas - El Centauro</span>
-            <button id="theme-toggle" title="Cambiar tema"><i class="fas fa-moon"></i></button>
+            <div class="header-actions">
+                <button id="export-storage" title="Descargar datos (localStorage)"><i class="fas fa-download"></i></button>
+                <input type="file" id="import-storage-input" accept=".json" style="display:none;">
+                <button id="import-storage" title="Cargar datos (localStorage)"><i class="fas fa-upload"></i></button>
+                <button id="theme-toggle" title="Cambiar tema"><i class="fas fa-moon"></i></button>
+            </div>
         </div>
     </header>
 
@@ -534,6 +543,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             </div>
 
             <h4>Resumen Mensual General</h4>
+             <p class="text-muted" style="font-size: 0.9em;">Las celdas de Gasto, Fondo y Cuotas se colorean según el origen general del mes: <span style="background-color: var(--real-month-bg); padding: 1px 4px; border-radius: 3px; color: var(--real-month-text);">REAL</span> (todos los detalles de gastos e ingresos de ese mes son reales) o <span style="background-color: var(--estimated-month-bg); padding: 1px 4px; border-radius: 3px; color: var(--estimated-month-text);">ESTIMADO</span> (algún detalle de gasto o ingreso de ese mes es estimado).</p>
             <div class="table-container">
                 <table id="dashboard-summary">
                     <thead>
@@ -541,12 +551,10 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                             <th>Mes</th>
                             <th>Gasto ($)</th>
                             <th>Fondo ($)</th>
-                            <th>Cuota s/Gs ($/UF)</th> <!-- Basado en Gasto+Fondo / UF -->
+                            <th>Cuota s/Gs ($/UF)</th>
                             <th>IPC (%)</th>
-                            <th>Cuota IPC ($/UF)</th>   <!-- NUEVO: Cuota s/Gs * (1 + IPC%) -->
-                            <!-- MODIFICACIÓN INICIO - Encabezado de tabla -->
-                            <th>Expensa Real ($/UF)</th> <!-- Ahora muestra el valor del rubro Expensas Ordinarias / UF -->
-                            <!-- MODIFICACIÓN FIN -->
+                            <th>Cuota IPC ($/UF)</th>
+                            <th>Expensa Real ($/UF)</th>
                         </tr>
                     </thead>
                     <tbody><!-- Contenido generado por JS --></tbody>
@@ -555,9 +563,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             </div>
 
             <h4 style="margin-top: 30px;">Detalle de Gastos Proyectados ($)</h4>
-             <p class="text-muted" style="font-size: 0.9em;">Haga clic en una fila de rubro para expandir/colapsar los detalles. Las celdas mensuales de detalle se colorean según su origen: <span style="background-color: var(--real-month-bg); padding: 1px 4px; border-radius: 3px;">REAL</span> (cargado desde Excel con número) o <span style="background-color: var(--estimated-month-bg); padding: 1px 4px; border-radius: 3px;">ESTIMADO</span> (cargado sin número o proyectado/calculado).</p>
+             <p class="text-muted" style="font-size: 0.9em;">Haga clic en una fila de rubro para expandir/colapsar los detalles. Las celdas mensuales de detalle se colorean según su origen: <span style="background-color: var(--real-month-bg); padding: 1px 4px; border-radius: 3px; color: var(--real-month-text);">REAL</span> (cargado desde Excel con número) o <span style="background-color: var(--estimated-month-bg); padding: 1px 4px; border-radius: 3px; color: var(--estimated-month-text);">ESTIMADO</span> (cargado sin número o proyectado/calculado).</p>
 
-            <!-- Added Group/Ungroup Buttons for Gastos -->
             <div class="table-actions">
                  <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('gastos', false)" title="Expandir todos los detalles de gastos"><i class="fas fa-expand"></i> Expandir Todo</button>
                  <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('gastos', true)" title="Colapsar todos los detalles de gastos"><i class="fas fa-compress"></i> Colapsar Todo</button>
@@ -568,7 +575,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      <thead>
                         <tr>
                             <th>Rubro / Detalle</th>
-                            <th>Coef. Aplicado</th> <!-- Add Coef. column header -->
+                            <th>Coef. Aplicado</th>
                             <!-- Meses y Total Anual generados por JS -->
                          </tr>
                      </thead>
@@ -578,9 +585,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             </div>
 
             <h4 style="margin-top: 30px;">Detalle de Ingresos Proyectados ($)</h4>
-             <p class="text-muted" style="font-size: 0.9em;">Haga clic en una fila de rubro para expandir/colapsar. Los valores aquí son la base de cálculo (valor individual o por UF). El Total de Ingresos en el Resumen General puede incluir la multiplicación por UF.</p>
+             <p class="text-muted" style="font-size: 0.9em;">Haga clic en una fila de rubro para expandir/colapsar. Los valores aquí son la base de cálculo (valor individual o por UF). El Total de Ingresos en el Resumen General puede incluir la multiplicación por UF. Las celdas mensuales de detalle se colorean según su origen: <span style="background-color: var(--real-month-bg); padding: 1px 4px; border-radius: 3px; color: var(--real-month-text);">REAL</span> (cargado desde Excel con número) o <span style="background-color: var(--estimated-month-bg); padding: 1px 4px; border-radius: 3px; color: var(--estimated-month-text);">ESTIMADO</span> (cargado sin número).</p>
 
-             <!-- Added Group/Ungroup Buttons for Ingresos -->
              <div class="table-actions">
                  <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('ingresos', false)" title="Expandir todos los detalles de ingresos"><i class="fas fa-expand"></i> Expandir Todo</button>
                  <button class="button-secondary button-sm" onclick="toggleAllRubroDetails('ingresos', true)" title="Colapsar todos los detalles de ingresos"><i class="fas fa-compress"></i> Colapsar Todo</button>
@@ -600,7 +606,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             </div>
 
             <div class="chart-container">
-                 <h3>Evolutivo Expensa Mensual ($/UF)</h3> <!-- MODIFICADO -->
+                 <h3>Evolutivo Expensa Mensual ($/UF)</h3>
                  <canvas id="evolutivoCuotaChart"></canvas>
                  <div class="chart-no-data" style="display: none;">No hay datos suficientes para graficar.</div>
             </div>
@@ -630,7 +636,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             <p>Sube tu archivo Excel con las hojas <strong>"Gastos"</strong> e <strong>"Ingresos"</strong>. Los rubros nuevos se añadirán automáticamente a la sección de Configuración.</p>
             <p><strong>Importante:</strong>
                 <ul style="margin-left: 20px; margin-bottom: 15px;">
-                    <li>Las celdas con **números** en la hoja "Gastos" marcarán ese mes/detalle como '<strong style="color: var(--accent-color)">REAL</strong>' (fondo verde claro en detalle). Las celdas vacías o con texto se considerarán '<strong style="color: var(--warning-color)">ESTIMADO</strong>'.</li>
+                    <li>Las celdas con **números** en las hojas "Gastos" e "Ingresos" marcarán ese mes/detalle como '<strong style="color: var(--accent-color)">REAL</strong>'. Las celdas vacías o con texto se considerarán '<strong style="color: var(--warning-color)">ESTIMADO</strong>' (y se tratarán como 0 para los cálculos iniciales).</li>
                     <li>Los rubros de Ingreso llamados "<strong id="cuota-rubro-name-info">Expensas Ordinarias</strong>" y "<strong>Expensas Extraordinarias</strong>" tendrán sus valores base multiplicados por la cantidad de UF (definida en Configuración) al calcular el *total* de ingresos en el Resumen General. La columna "Expensa Real ($/UF)" en el resumen muestra el valor del rubro "<strong id="cuota-rubro-name-info2">Expensas Ordinarias</strong>" <strong style="color: var(--primary-color)">dividido por la cantidad de UF</strong>.</li>
                 </ul>
             </p>
@@ -700,7 +706,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
              <div class="config-section">
                  <h4><i class="fas fa-percentage"></i> Gestión de Coeficientes de Ajuste (para Gastos Estimados)</h4>
-                 <p class="text-muted" style="font-size: 0.9em;">Define tipos de coeficientes (ej. Inflación, Aumento Gremial) y asigna uno a cada rubro de Gasto. Al usar "Calcular Estimados" en el Dashboard, el sistema proyectará los meses sin datos '<strong style="color: var(--accent-color)">REAL</strong>' (marcados en amarillo) multiplicando el último valor '<strong style="color: var(--accent-color)">REAL</strong>' por el coeficiente acumulado correspondiente a cada mes futuro.</p>
+                 <p class="text-muted" style="font-size: 0.9em;">Define tipos de coeficientes (ej. Inflación, Aumento Gremial) y asigna uno a cada rubro de Gasto. Al usar "Calcular Estimados" en el Dashboard, el sistema proyectará los meses sin datos '<strong style="color: var(--accent-color)">REAL</strong>' (marcados en color <span style="background-color: var(--estimated-month-bg); padding: 1px 4px; border-radius: 3px; color: var(--estimated-month-text);">ESTIMADO</span>) multiplicando el último valor '<strong style="color: var(--accent-color)">REAL</strong>' por el coeficiente acumulado correspondiente a cada mes futuro.</p>
                  <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                      <div style="flex: 1; min-width: 280px;">
                          <h5>Tipos de Coeficientes Disponibles</h5>
@@ -712,18 +718,17 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      </div>
                      <div id="coefficient-editor" style="flex: 2; min-width: 450px;">
                           <h5><i class="fas fa-edit"></i> Editar Valores Mensuales para: <span id="editing-coefficient-name" style="color: var(--primary-color); font-weight: bold;"></span></h5>
-                           <!-- MODIFICACIÓN FIX: Reemplazar tabla por grid similar a IPC -->
                           <div id="coefficient-values-editor">
-                              <p class="text-muted">Selecciona un tipo de coeficiente (que no sea "Sin Coeficiente" o "IPC") de la lista de la izquierda para editar sus valores porcentuales (%) mes a mes.</p>
+                              <p class="text-muted">Selecciona un tipo de coeficiente de la lista de la izquierda para editar/ver sus valores porcentuales (%) mes a mes.</p>
                           </div>
-                         <!-- END MODIFICACIÓN FIX -->
+                         <p id="ipc-editor-note" class="text-muted" style="font-size: 0.85em; margin-top:10px; display:none;">Los valores de IPC se gestionan en la sección "Índices IPC Mensuales de Referencia (%)" más abajo y se muestran aquí solo para visualización.</p>
                      </div>
                  </div>
              </div>
 
              <div class="config-section">
                  <h4><i class="fas fa-chart-line"></i> Índices IPC Mensuales de Referencia (%)</h4>
-                 <p class="text-muted">Introduce el porcentaje (%) de IPC estimado o real para cada mes. Se usa únicamente para calcular la columna "Cuota IPC ($/UF)" como referencia en el Dashboard y está disponible como tipo de coeficiente ("IPC"). Sus valores son gestionados en esta sección y se reflejan en la lista de tipos de coeficientes.</p> <!-- MODIFICACIÓN FIX: Clarify IPC usage -->
+                 <p class="text-muted">Introduce el porcentaje (%) de IPC estimado o real para cada mes. Se usa únicamente para calcular la columna "Cuota IPC ($/UF)" como referencia en el Dashboard y está disponible como tipo de coeficiente ("IPC"). Sus valores son gestionados en esta sección y se reflejan en la lista de tipos de coeficientes.</p>
                  <div id="ipc-inputs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px;">
                      <!-- Inputs generados por JS -->
                  </div>
@@ -737,12 +742,12 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         <!-- ==================== REPORTS ==================== -->
         <div id="reports" class="tab-content">
              <h2><i class="fas fa-download"></i> Descargar Reportes - <span class="current-year"></span> (<span class="current-scenario">Base</span>)</h2>
-             <p>Genera y descarga los datos del ejercicio y escenario actual en formato Excel, incluyendo detalles y resumen.</p>
+             <p>Genera y descarga los datos del ejercicio y escenario actual en formato Excel, incluyendo detalles y resumen con formato mejorado.</p>
              <button onclick="exportToExcel()" class="button-success" title="Descargar un archivo .xlsx con el detalle y resumen del escenario actual"><i class="fas fa-file-excel"></i> Descargar Reporte Completo (.xlsx)</button>
 
              <h3 style="margin-top: 35px;">Exportar Gráficos Individuales</h3>
              <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                 <button onclick="exportChart('evolutivoCuotaChart', 'evolutivo_expensa.png')" class="button-secondary" title="Descargar el gráfico de evolución de expensas como imagen PNG"><i class="fas fa-chart-line"></i> Gráfico Evolutivo (PNG)</button> <!-- MODIFICADO -->
+                 <button onclick="exportChart('evolutivoCuotaChart', 'evolutivo_expensa.png')" class="button-secondary" title="Descargar el gráfico de evolución de expensas como imagen PNG"><i class="fas fa-chart-line"></i> Gráfico Evolutivo (PNG)</button>
                  <button onclick="exportChart('participacionGastosChart', 'participacion_gastos.png')" class="button-secondary" title="Descargar el gráfico de torta de gastos como imagen PNG"><i class="fas fa-chart-pie"></i> Gráfico Gastos (PNG)</button>
                  <button onclick="exportChart('participacionIngresosChart', 'participacion_ingresos.png')" class="button-secondary" title="Descargar el gráfico de torta de ingresos como imagen PNG"><i class="fas fa-chart-pie"></i> Gráfico Ingresos (PNG)</button>
              </div>
@@ -751,7 +756,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
     <footer>
         <div class="container">
-            &copy; <span id="footer-year"></span> Proyección Expensas El Centauro. v2.9 (Rubros Fix)
+            &copy; <span id="footer-year"></span> Proyección Expensas El Centauro. v2.9.5 (Fix Totals & Colors)
         </div>
     </footer>
     <div id="snackbar">Mensaje</div>
@@ -763,7 +768,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         const FULL_MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
         const GASTOS_SHEET_NAME = "Gastos";
         const INGRESOS_SHEET_NAME = "Ingresos";
-        const STORAGE_KEY = 'expensasAppCentauroState_v2.9_RubrosFix';
+        const STORAGE_KEY = 'expensasAppCentauroState_v2.9.5_FixTotalsAndColors'; 
         const CUOTA_RUBRO_NAME = "Expensas Ordinarias";
         const EXTRA_CUOTA_RUBRO_NAME = "Expensas Extraordinarias";
         const SPECIAL_INGRESO_RUBROS = [CUOTA_RUBRO_NAME, EXTRA_CUOTA_RUBRO_NAME];
@@ -792,7 +797,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                     ipcManual: Array(12).fill(0),
                     cuotaIpcMes: Array(12).fill(0),
                     cuotaRealBaseMes: Array(12).fill(0),
-                    annualTotals: { gastos: {__TOTAL__:0}, ingresos: {__TOTAL__:0}, fondoReserva: 0, cuotaSobreGastos: 0, cuotaIpc: 0, cuotaRealBase: 0 }
+                    annualTotals: { gastos: {__TOTAL__:0}, ingresos: {__TOTAL__:0}, fondoReserva: 0, cuotaSobreGastos: 0, cuotaIpc: 0, cuotaRealBase: 0 },
+                    monthOverallStatus: Array(12).fill('Estimado') 
                 }
             };
             const defaultSettings = {
@@ -800,7 +806,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  rubros: { gastos: [], ingresos: [] },
                  rubroConfig: {},
                  coefficientTypes: {
-                     "None": { name: "Sin Coeficiente", values: Array(12).fill(1), isDefault: true },
+                     "None": { name: "Sin Coeficiente", values: Array(12).fill(0), isDefault: true },
                      "IPC": { name: "IPC", values: Array(12).fill(0), isDefault: true },
                      "UTEDYC": { name: "UTEDYC (Ejemplo)", values: [0, 0, 10, 0, 0, 8, 0, 0, 7, 0, 0, 5], isDefault: true },
                  },
@@ -822,11 +828,22 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  const savedState = localStorage.getItem(STORAGE_KEY);
                  if (savedState) {
                      const loadedState = JSON.parse(savedState);
-                     appState = deepMerge(getDefaultAppState(), loadedState);
-                    if (!appState.settings) appState.settings = getDefaultAppState().settings;
-                    if (!appState.settings.rubros || typeof appState.settings.rubros !== 'object' || appState.settings.rubros === null) appState.settings.rubros = { gastos: [], ingresos: [] };
-                    if (!Array.isArray(appState.settings.rubros.gastos)) appState.settings.rubros.gastos = [];
-                    if (!Array.isArray(appState.settings.rubros.ingresos)) appState.settings.rubros.ingresos = [];
+                     const defaultAppState = getDefaultAppState();
+                     appState = {
+                         ...defaultAppState,
+                         ...loadedState,
+                         settings: deepMerge(defaultAppState.settings, loadedState.settings || {}),
+                         scenarios: {} 
+                     };
+
+                     if (loadedState.scenarios) {
+                        for (const key in loadedState.scenarios) {
+                            if (Object.hasOwnProperty.call(loadedState.scenarios, key)) {
+                                appState.scenarios[key] = deepMerge(defaultAppState.BaseScenarioStructureTemplate, loadedState.scenarios[key]);
+                            }
+                        }
+                     }
+
                  } else {
                      appState = getDefaultAppState();
                  }
@@ -837,21 +854,15 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              }
         }
 
-        function saveState() {
+        function saveState() { 
              try {
-                 const stateToSave = {
-                     currentYear: appState.currentYear,
-                     scenarios: appState.scenarios,
-                     activeScenarioKey: appState.activeScenarioKey,
-                     settings: appState.settings,
-                     darkMode: appState.darkMode,
-                 };
-                 localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
              } catch (e) {
                  console.error(`Error guardando estado a localStorage con key "${STORAGE_KEY}":`, e);
                  showSnackbar("Error al guardar estado en el navegador.", true, 'error', 6000);
              }
          }
+
 
         function deepMerge(target, source) {
              const output = { ...target };
@@ -859,11 +870,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  Object.keys(source).forEach(key => {
                      const targetValue = target[key];
                      const sourceValue = source[key];
-                     if (isObject(sourceValue) && isObject(targetValue)) {
+                     if (isObject(sourceValue) && isObject(targetValue) && !Array.isArray(targetValue)) { 
                          output[key] = deepMerge(targetValue, sourceValue);
-                     } else if (Array.isArray(sourceValue)) {
-                         output[key] = [...sourceValue];
-                     } else {
+                     } else { 
                            output[key] = sourceValue;
                      }
                  });
@@ -883,6 +892,12 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  return `$ ${num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
              } catch (e) { return `$ ${num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`; }
         }
+        function formatNumberForExcel(value) {
+            const num = Number(value);
+            if (isNaN(num) || !isFinite(num)) return 0;
+            return num;
+        }
+
 
         function hexToRgba(hex, alpha) {
             hex = String(hex || '#000000').trim().replace('#', '');
@@ -960,14 +975,17 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
              const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
              const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-             const legendFontSize = Math.round(parseFloat(getComputedStyle(document.body).fontSize) * 1.2);
+             const baseFontSize = parseFloat(getComputedStyle(document.body).fontSize);
+             const legendFontSize = Math.round(baseFontSize * 1.2);
+
              return {
                  responsive: true, maintainAspectRatio: false, cutout: '30%',
                  plugins: {
                      legend: {
                          position: 'right',
                          labels: {
-                            color: textColor, boxWidth: 15, padding: 15, font: { size: legendFontSize },
+                            color: textColor, boxWidth: 15, padding: 15,
+                            font: { size: Math.round(legendFontSize * 0.85) },
                              generateLabels: chart => {
                                 const data = chart.data; if (!data.labels.length || !data.datasets.length) return [];
                                 const { labels } = data; const dataset = data.datasets[0];
@@ -975,7 +993,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                                 return labels.map((label, i) => ({
                                     text: `${label} (${total > 0 ? ((dataset.data[i] / total) * 100).toFixed(1) + '%' : '0.0%'})`,
                                     fillStyle: dataset.backgroundColor[i], strokeStyle: dataset.borderColor || dataset.backgroundColor[i],
-                                    lineWidth: dataset.borderWidth || 0, hidden: chart.getDataVisibility(i) || dataset.data[i] === 0, index: i
+                                    lineWidth: dataset.borderWidth || 0,
+                                    hidden: !chart.getDataVisibility(i),
+                                    index: i
                                 }));
                              }
                          }
@@ -1004,12 +1024,10 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             inputs.forEach((input, i) => {
                 input.step = uiCurrentStep; input.placeholder = uiUnitLabel;
                 input.title = `Valor de fondo de reserva para ${FULL_MONTHS[i]} (${uiUnitLabel})`;
-                 // Actualizar el valor si el panel ya fue renderizado y solo cambió el tipo
                  const scenario = getCurrentScenarioData();
                  if (scenario && scenario.reserveFund && scenario.reserveFund.values[i] !== undefined) {
-                     // No cambiar el valor aquí directamente, solo la UI. El valor se guarda con saveReserveFund.
                  } else {
-                     input.value = isPercent ? 5 : 0; // Default si no hay datos aún
+                     input.value = isPercent ? 5 : 0; 
                  }
             });
         }
@@ -1020,7 +1038,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const uiCurrentStep = reserveFundData.type === 'percent' ? '0.1' : '100';
              const reserveValues = (Array.isArray(reserveFundData.values) && reserveFundData.values.length === 12) ? reserveFundData.values.map(v => parseFloat(v || 0)) : Array(12).fill(reserveFundData.type === 'percent' ? 5 : 0);
              for (let i = 0; i < 12; i++) {
-                 const monthDiv = document.createElement('div'); monthDiv.classList.add('form-group'); // Corregido: form-group no month-config
+                 const monthDiv = document.createElement('div'); monthDiv.classList.add('form-group');
                  const label = document.createElement('label'); label.textContent = FULL_MONTHS[i]; label.htmlFor = `reserve-month-${i}`;
                  const input = document.createElement('input'); input.type = 'number'; input.id = `reserve-month-${i}`; input.dataset.month = i;
                  input.value = reserveValues[i]; input.step = uiCurrentStep; input.min = '0'; input.placeholder = uiUnitLabel; input.style.textAlign = 'right';
@@ -1031,7 +1049,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
         function ensureCollapsibleTableHeaderFooterCells(thead, tfoot, type) {
              let theadRow = thead.querySelector('tr'); if (!theadRow) theadRow = thead.insertRow();
-             const expectedHeaderCellCount = (type === 'gastos' ? 2 : 1) + MONTHS.length + 1;
+             const expectedHeaderCellCount = (type === 'gastos' ? 2 : 1) + MONTHS.length + 1; 
              let headersNeedRebuild = theadRow.cells.length !== expectedHeaderCellCount || theadRow.cells[0]?.textContent !== "Rubro / Detalle" || (type === 'gastos' && theadRow.cells[1]?.textContent !== "Coef. Aplicado") || theadRow.cells[theadRow.cells.length - 1]?.textContent !== "Total Anual";
              if (headersNeedRebuild) {
                  theadRow.innerHTML = ''; theadRow.insertCell().textContent = "Rubro / Detalle";
@@ -1039,14 +1057,64 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  MONTHS.forEach(month => { const th=theadRow.insertCell(); th.textContent=month; th.classList.add('number-cell'); });
                  const thTotal = theadRow.insertCell(); thTotal.textContent="Total Anual"; thTotal.classList.add('number-cell');
              }
-            let tfootRow = tfoot.querySelector('tr'); if (!tfootRow || tfootRow.cells.length === 0) tfootRow = tfoot.insertRow();
-             const footerDescCols = type === 'gastos' ? 2 : 1; const expectedFooterCellCount = footerDescCols + 12 + 1;
-             let footerLabelCell = tfootRow.cells[0]; if (!footerLabelCell) footerLabelCell = tfootRow.insertCell(0);
-             footerLabelCell.colSpan = footerDescCols; footerLabelCell.textContent = `TOTAL GENERAL ${type.toUpperCase()}`; footerLabelCell.classList.remove('number-cell');
-             while(tfootRow.cells.length < expectedFooterCellCount) tfootRow.insertCell(); while(tfootRow.cells.length > expectedFooterCellCount) tfootRow.deleteCell(-1);
-             for(let i=footerDescCols; i<expectedFooterCellCount; i++) if(tfootRow.cells[i]) tfootRow.cells[i].classList.add('number-cell');
-             tfootRow.style.fontWeight = "bold"; // Asegurar que el pie de tabla esté en negrita
+            
+            let tfootRow = tfoot.querySelector('tr'); 
+            if (!tfootRow) {
+                tfootRow = tfoot.insertRow();
+            }
+            
+            const footerDescCols = type === 'gastos' ? 2 : 1; 
+            const expectedPhysicalCellsInFoot = 1 + 12 + 1; 
+
+            if (tfootRow.cells.length !== expectedPhysicalCellsInFoot || tfootRow.cells[0]?.colSpan !== footerDescCols) {
+                tfootRow.innerHTML = ''; 
+                const labelCell = tfootRow.insertCell();
+                labelCell.colSpan = footerDescCols; 
+                labelCell.textContent = `TOTAL GENERAL ${type.toUpperCase()}`;
+                
+                for (let i = 0; i < 12 + 1; i++) { 
+                    const cell = tfootRow.insertCell(); 
+                    cell.classList.add('number-cell');
+                    cell.textContent = formatCurrency(0); 
+                }
+            }
         }
+
+        function updateCollapsibleTableFooters(scenarioData) {
+            const processFooter = (type) => {
+                const table = document.getElementById(`${type}-detail-table`);
+                if (!table) return;
+                const tfoot = table.querySelector('tfoot');
+                if (!tfoot || !tfoot.rows[0]) return;
+                
+                const tfootRow = tfoot.rows[0];
+                // La primera celda es la etiqueta con colspan. Las celdas de datos comienzan en el índice 1.
+                const dataCellStartIndex = 1; 
+
+                let monthlyTotals, annualTotal;
+                if (scenarioData && scenarioData.calculated) {
+                    monthlyTotals = (type === 'gastos' ? scenarioData.calculated.totalGastoProyectadoMes : scenarioData.calculated.totalIngresoProyectadoMes) || Array(12).fill(0);
+                    annualTotal = (type === 'gastos' ? scenarioData.calculated.annualTotals?.gastos?.__TOTAL__ : scenarioData.calculated.annualTotals?.ingresos?.__TOTAL__) || 0;
+                } else {
+                    monthlyTotals = Array(12).fill(0);
+                    annualTotal = 0;
+                }
+
+                for (let i = 0; i < 12; i++) { // Meses
+                    if (tfootRow.cells[dataCellStartIndex + i]) {
+                        tfootRow.cells[dataCellStartIndex + i].textContent = formatCurrency(monthlyTotals[i]);
+                    }
+                }
+                // Total Anual
+                if (tfootRow.cells[dataCellStartIndex + 12]) {
+                    tfootRow.cells[dataCellStartIndex + 12].textContent = formatCurrency(annualTotal);
+                }
+            };
+
+            processFooter('gastos');
+            processFooter('ingresos');
+        }
+
 
         function updateRubroList(type, listElementId) {
             const listElement = document.getElementById(listElementId); if (!listElement) return; listElement.innerHTML = '';
@@ -1076,7 +1144,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             Object.entries(coefTypes).forEach(([key, type]) => {
                 const li = document.createElement('li');
                 const span = document.createElement('span'); span.textContent = type.name;
-                if (key !== 'None' && key !== 'IPC') span.style.cursor = 'pointer'; span.onclick = () => (key !== 'None' && key !== 'IPC') ? editCoefficientType(key) : null;
+                span.style.cursor = 'pointer'; 
+                span.onclick = () => editCoefficientType(key);
                 li.appendChild(span);
                 if (!type.isDefault) {
                     const btnRemove = document.createElement('button'); btnRemove.innerHTML = '<i class="fas fa-trash-alt"></i>'; btnRemove.classList.add('button-danger', 'button-sm'); btnRemove.title = `Eliminar tipo ${type.name}`;
@@ -1090,18 +1159,31 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         function renderCoefficientValuesEditor(typeKey) {
             const editorDiv = document.getElementById('coefficient-values-editor');
             const nameSpan = document.getElementById('editing-coefficient-name');
-            if (!editorDiv || !nameSpan) return;
-            editorDiv.innerHTML = '';
+            const ipcNote = document.getElementById('ipc-editor-note');
+            if (!editorDiv || !nameSpan || !ipcNote) return;
+            
+            editorDiv.innerHTML = ''; 
+            ipcNote.style.display = 'none'; 
 
             const typeData = appState.settings.coefficientTypes?.[typeKey];
-            if (!typeData || typeKey === 'None' || typeKey === 'IPC') {
-                nameSpan.textContent = typeData ? typeData.name : (typeKey || 'Ninguno');
-                editorDiv.innerHTML = `<p class="text-muted">Selecciona un tipo de coeficiente (que no sea "Sin Coeficiente" o "IPC") para editar sus valores.</p>`;
-                appState.uiState.editingCoefficientType = null; // Reset if invalid type for editing
+
+            if (!typeData) { 
+                nameSpan.textContent = (typeKey || 'Ninguno');
+                editorDiv.innerHTML = `<p class="text-muted">Selecciona un tipo de coeficiente de la lista de la izquierda para editar/ver sus valores.</p>`;
+                appState.uiState.editingCoefficientType = null;
                 return;
             }
+            
             nameSpan.textContent = typeData.name;
+
+            if (typeKey === 'None') {
+                 editorDiv.innerHTML = `<p class="text-muted">"${typeData.name}" aplica un multiplicador de 1 (0% de ajuste) a todos los meses. No es editable.</p>`;
+                 return;
+            }
+
             const values = Array.isArray(typeData.values) && typeData.values.length === 12 ? typeData.values : Array(12).fill(0);
+            const isIPC = typeKey === 'IPC';
+
             values.forEach((val, i) => {
                 const monthDiv = document.createElement('div'); monthDiv.classList.add('form-group');
                 const label = document.createElement('label'); label.textContent = FULL_MONTHS[i]; label.htmlFor = `coef-val-${typeKey}-${i}`;
@@ -1109,16 +1191,26 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                 input.dataset.month = i; input.dataset.typeKey = typeKey; input.value = val;
                 input.step = '0.1'; input.min = '-100'; input.placeholder = '%'; input.style.textAlign = 'right';
                 input.title = `Valor para ${FULL_MONTHS[i]} de ${typeData.name} (%)`;
-                input.addEventListener('change', handleCoefficientValueChange);
+                
+                if (isIPC) {
+                    input.disabled = true; 
+                } else {
+                    input.addEventListener('change', handleCoefficientValueChange);
+                }
                 monthDiv.appendChild(label); monthDiv.appendChild(input); editorDiv.appendChild(monthDiv);
             });
+
+            if (isIPC) {
+                ipcNote.style.display = 'block'; 
+            }
         }
+
 
         function updateIPCManualInputs() {
              const ipcDiv = document.getElementById('ipc-inputs'); if (!ipcDiv) return; ipcDiv.innerHTML = '';
              appState.settings.ipcManual = Array.isArray(appState.settings.ipcManual) && appState.settings.ipcManual.length === 12 ? appState.settings.ipcManual.map(v => parseFloat(v || 0)) : Array(12).fill(0);
              const ipcValues = appState.settings.ipcManual;
-             const ipcCoefType = appState.settings.coefficientTypes?.['IPC'];
+             
              for (let i = 0; i < 12; i++) {
                  const monthDiv = document.createElement('div'); monthDiv.classList.add('form-group');
                  const label = document.createElement('label'); label.textContent = FULL_MONTHS[i]; label.htmlFor = `ipc-month-${i}`;
@@ -1129,15 +1221,64 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                      if (!isNaN(monthIndex) && monthIndex >= 0 && monthIndex < 12) {
                          const validatedValue = (!isNaN(value) && value >= 0) ? value : 0;
                          appState.settings.ipcManual[monthIndex] = validatedValue;
-                         if(ipcCoefType?.values?.length === 12) ipcCoefType.values[monthIndex] = validatedValue;
+                         if(appState.settings.coefficientTypes['IPC'] && appState.settings.coefficientTypes['IPC'].values?.length === 12) {
+                            appState.settings.coefficientTypes['IPC'].values[monthIndex] = validatedValue;
+                         }
+                         if(appState.uiState.editingCoefficientType === 'IPC') {
+                            renderCoefficientValuesEditor('IPC');
+                         }
                      } else event.target.value = appState.settings.ipcManual[monthIndex] ?? 0;
                  });
                  monthDiv.appendChild(label); monthDiv.appendChild(input); ipcDiv.appendChild(monthDiv);
              }
         }
+        
+        function getMonthOverallStatus(monthIndex, scenarioData) {
+            if (!scenarioData || !scenarioData.monthStatus) return 'Estimado';
+            
+            let isOverallReal = true;
+            let hasAnyDetail = false; 
+
+            function checkTypeStatus(type) {
+                if (!isOverallReal) return; 
+                
+                if (scenarioData.monthStatus[type] && Object.keys(scenarioData.monthStatus[type]).length > 0) {
+                    for (const rubroName in scenarioData.monthStatus[type]) {
+                        if (!isOverallReal) return;
+                        const rubroStatus = scenarioData.monthStatus[type][rubroName];
+                        if (rubroStatus && Object.keys(rubroStatus).length > 0) { 
+                            for (const detailName in rubroStatus) {
+                                hasAnyDetail = true; 
+                                if (!isOverallReal) return;
+                                const detailMonthStatusArray = rubroStatus[detailName];
+                                if (Array.isArray(detailMonthStatusArray) && detailMonthStatusArray.length === 12) {
+                                    const statusForMonth = detailMonthStatusArray[monthIndex];
+                                    if (statusForMonth !== 'REAL') {
+                                        isOverallReal = false;
+                                        return; 
+                                    }
+                                } else { 
+                                    isOverallReal = false; return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            checkTypeStatus('gastos');
+            if (!isOverallReal) return 'Estimado'; 
+            
+            checkTypeStatus('ingresos');
+            
+            if (!hasAnyDetail && (Object.keys(scenarioData.monthStatus?.gastos || {}).length === 0 && Object.keys(scenarioData.monthStatus?.ingresos || {}).length === 0) ) {
+                 return 'Estimado'; // Si no hay ningún dato en absoluto, es estimado por defecto
+            }
+
+            return isOverallReal ? 'REAL' : 'Estimado';
+        }
 
 
-        // --- Gestión de Datos del Escenario (Continuación) ---
         function validateAndSetActiveScenario() {
             let activeKeyIsValid = false; let fallbackNeeded = true;
             if (appState.activeScenarioKey && appState.scenarios?.[appState.activeScenarioKey]) {
@@ -1168,18 +1309,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                 const year = new Date().getFullYear(); appState.currentYear = year;
                 initScenarioData(year, 'Base'); appState.activeScenarioKey = `${year}_Base`;
             }
-            const currentScenario = getCurrentScenarioData(); // Esto puede llamar a validateAndSetActiveScenario de nuevo si no hay nada
+            const currentScenario = getCurrentScenarioData(); 
             if (currentScenario) { initializeScenarioDataForRubros(currentScenario); ensureDefaultCoefficientTypes(); }
             else console.error("validateAndSetActiveScenario: No se pudo establecer un escenario activo válido después de los fallbacks.");
-            // saveState(); // Save state se hace al final de DOMContentLoaded y después de cambios
         }
 
         function getCurrentScenarioData() {
              if (appState.activeScenarioKey && appState.scenarios?.[appState.activeScenarioKey]?.year !== undefined) return appState.scenarios[appState.activeScenarioKey];
-             // Si no hay escenario activo válido, validateAndSetActiveScenario intentará establecer uno.
-             // Esta función es llamada a menudo, así que evitamos bucles infinitos no llamando a validateAndSetActiveScenario aquí directamente
-             // sino confiando en que se llamó en la inicialización o cuando se cambió de escenario.
-             console.warn("getCurrentScenarioData: No hay un escenario activo válido o datos. Esto podría ser normal durante la inicialización o si no hay escenarios.");
+             // console.warn("getCurrentScenarioData: No hay un escenario activo válido o datos."); // Comentado para reducir ruido en consola
              return null;
         }
 
@@ -1190,7 +1327,6 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const defaultTemplate = getDefaultAppState().BaseScenarioStructureTemplate;
              appState.scenarios[key] = JSON.parse(JSON.stringify(defaultTemplate));
              appState.scenarios[key].year = year; appState.scenarios[key].scenarioName = scenarioName;
-             // initializeScenarioDataForRubros se llamará cuando este escenario se active o se carguen datos.
              return appState.scenarios[key];
         }
 
@@ -1201,16 +1337,28 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              scenarioData.rubroOrder.ingresos = Array.isArray(scenarioData.rubroOrder.ingresos) ? scenarioData.rubroOrder.ingresos : [];
              scenarioData.data = scenarioData.data ?? { gastos: {}, ingresos: {} };
              scenarioData.data.gastos = scenarioData.data.gastos ?? {}; scenarioData.data.ingresos = scenarioData.data.ingresos ?? {};
-             scenarioData.monthStatus = scenarioData.monthStatus ?? { gastos: {}, ingresos: {} }; // Ingresos no usa monthStatus actualmente
+
+             scenarioData.monthStatus = scenarioData.monthStatus ?? { gastos: {}, ingresos: {} }; 
              scenarioData.monthStatus.gastos = scenarioData.monthStatus.gastos ?? {};
+             scenarioData.monthStatus.ingresos = scenarioData.monthStatus.ingresos ?? {};
+
              scenarioData.reserveFund = scenarioData.reserveFund ?? { type: 'percent', values: Array(12).fill(5) };
              scenarioData.reserveFund.values = (Array.isArray(scenarioData.reserveFund.values) && scenarioData.reserveFund.values.length === 12) ? scenarioData.reserveFund.values.map(v => parseFloat(v||0)) : Array(12).fill(scenarioData.reserveFund.type === 'fixed' ? 0 : 5);
+             
              scenarioData.calculated = scenarioData.calculated ?? {};
              const defaultCalc = getDefaultAppState().BaseScenarioStructureTemplate?.calculated || {};
              for(const k in defaultCalc) {
-                 if(scenarioData.calculated[k] === undefined || scenarioData.calculated[k] === null) scenarioData.calculated[k] = Array.isArray(defaultCalc[k]) ? Array(12).fill(0) : (typeof defaultCalc[k] === 'object' ? {} : defaultCalc[k]);
-                 else if (Array.isArray(scenarioData.calculated[k]) && scenarioData.calculated[k].length !== 12 && k !== 'annualTotals') scenarioData.calculated[k] = Array(12).fill(0); // No resetear annualTotals
+                 if(scenarioData.calculated[k] === undefined || scenarioData.calculated[k] === null) {
+                    scenarioData.calculated[k] = Array.isArray(defaultCalc[k]) ? [...defaultCalc[k]] : (typeof defaultCalc[k] === 'object' ? {...defaultCalc[k]} : defaultCalc[k]);
+                 } else if (Array.isArray(scenarioData.calculated[k]) && scenarioData.calculated[k].length !== 12 && k !== 'annualTotals') {
+                    scenarioData.calculated[k] = [...defaultCalc[k]]; 
+                 }
              }
+             if (!Array.isArray(scenarioData.calculated.monthOverallStatus) || scenarioData.calculated.monthOverallStatus.length !== 12) {
+                scenarioData.calculated.monthOverallStatus = Array(12).fill('Estimado');
+             }
+
+
              scenarioData.calculated.annualTotals = scenarioData.calculated.annualTotals ?? { gastos: {__TOTAL__:0}, ingresos: {__TOTAL__:0}, fondoReserva: 0, cuotaSobreGastos: 0, cuotaIpc: 0, cuotaRealBase: 0 };
              scenarioData.calculated.annualTotals.gastos = scenarioData.calculated.annualTotals.gastos ?? { __TOTAL__: 0 };
              scenarioData.calculated.annualTotals.ingresos = scenarioData.calculated.annualTotals.ingresos ?? { __TOTAL__: 0 };
@@ -1224,7 +1372,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                       if (!scenarioData.data[type][rubro]) scenarioData.data[type][rubro] = { detailOrder: [], detailsData: {} };
                       scenarioData.data[type][rubro].detailOrder = Array.isArray(scenarioData.data[type][rubro].detailOrder) ? scenarioData.data[type][rubro].detailOrder : [];
                       scenarioData.data[type][rubro].detailsData = (typeof scenarioData.data[type][rubro].detailsData === 'object' && scenarioData.data[type][rubro].detailsData !== null) ? scenarioData.data[type][rubro].detailsData : {};
-                      if (type === 'gastos') scenarioData.monthStatus[type][rubro] = (typeof scenarioData.monthStatus[type][rubro] === 'object' && scenarioData.monthStatus[type][rubro] !== null) ? scenarioData.monthStatus[type][rubro] : {};
+                      
+                      scenarioData.monthStatus[type][rubro] = (typeof scenarioData.monthStatus[type][rubro] === 'object' && scenarioData.monthStatus[type][rubro] !== null) ? scenarioData.monthStatus[type][rubro] : {};
 
                       const calcKeyPrefix = type === 'gastos' ? 'gasto' : 'ingreso';
                       const calcKeyTotalRubroMes = `total${type.charAt(0).toUpperCase() + type.slice(1)}RubroMes`;
@@ -1240,17 +1389,20 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                            if(!Array.isArray(detailDataArray) || detailDataArray.length !== 12) scenarioData.data[type][rubro].detailsData[detail] = Array(12).fill(0);
                            else scenarioData.data[type][rubro].detailsData[detail] = detailDataArray.map(v => parseFloat(v||0));
 
-                           if (type === 'gastos') {
-                               const statusArray = scenarioData.monthStatus[type][rubro]?.[detail];
-                               if (!Array.isArray(statusArray) || statusArray.length !== 12) scenarioData.monthStatus[type][rubro][detail] = Array(12).fill('Estimado');
-                               else scenarioData.monthStatus[type][rubro][detail] = statusArray.map(s => String(s || 'Estimado'));
+                           const statusArray = scenarioData.monthStatus[type]?.[rubro]?.[detail];
+                           if (!scenarioData.monthStatus[type][rubro]) scenarioData.monthStatus[type][rubro] = {};
+                           if (!Array.isArray(statusArray) || statusArray.length !== 12) {
+                               scenarioData.monthStatus[type][rubro][detail] = Array(12).fill('Estimado');
+                           } else {
+                               scenarioData.monthStatus[type][rubro][detail] = statusArray.map(s => String(s || 'Estimado'));
                            }
+                           
                            const calcDetailArray = scenarioData.calculated[`${calcKeyPrefix}Ajustado`][rubro]?.[detail];
                            if(!Array.isArray(calcDetailArray) || calcDetailArray.length !== 12) scenarioData.calculated[`${calcKeyPrefix}Ajustado`][rubro][detail] = Array(12).fill(0);
                            else scenarioData.calculated[`${calcKeyPrefix}Ajustado`][rubro][detail] = calcDetailArray.map(v=>parseFloat(v||0));
                        });
                  });
-                 Object.keys(scenarioData.data[type] || {}).forEach(rubro => { if (!globalRubros.includes(rubro)) { delete scenarioData.data[type][rubro]; if (type === 'gastos') delete scenarioData.monthStatus[type][rubro]; } });
+                 Object.keys(scenarioData.data[type] || {}).forEach(rubro => { if (!globalRubros.includes(rubro)) { delete scenarioData.data[type][rubro]; delete scenarioData.monthStatus[type]?.[rubro]; } });
                  scenarioData.rubroOrder[type] = scenarioData.rubroOrder[type].filter(rubro => globalRubros.includes(rubro));
              });
          }
@@ -1259,26 +1411,43 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
               const defaultTypes = getDefaultAppState().settings.coefficientTypes;
              appState.settings.coefficientTypes = appState.settings.coefficientTypes || {};
              for (const key in defaultTypes) {
-                 if (!appState.settings.coefficientTypes[key]) appState.settings.coefficientTypes[key] = JSON.parse(JSON.stringify(defaultTypes[key]));
-                 else {
-                      appState.settings.coefficientTypes[key].isDefault = defaultTypes[key].isDefault ?? false;
-                     if (key === 'IPC') {
-                          const manualIPC = appState.settings.ipcManual;
-                          if (!Array.isArray(manualIPC) || manualIPC.length !== 12) appState.settings.ipcManual = Array(12).fill(0);
-                           appState.settings.coefficientTypes[key].values = [...appState.settings.ipcManual.map(v => parseFloat(v||0))];
-                      } else if (key === 'None') appState.settings.coefficientTypes[key].values = Array(12).fill(1);
-                      else if (Array.isArray(appState.settings.coefficientTypes[key].values) && appState.settings.coefficientTypes[key].values.length === 12) appState.settings.coefficientTypes[key].values = appState.settings.coefficientTypes[key].values.map(val => (!isNaN(parseFloat(val)) && parseFloat(val) >= -100) ? parseFloat(val) : 0);
-                      else appState.settings.coefficientTypes[key].values = Array(12).fill(0);
+                 if (!appState.settings.coefficientTypes[key]) {
+                    appState.settings.coefficientTypes[key] = JSON.parse(JSON.stringify(defaultTypes[key]));
+                 } else {
+                    appState.settings.coefficientTypes[key].isDefault = defaultTypes[key].isDefault ?? false;
+                    if (!Array.isArray(appState.settings.coefficientTypes[key].values) || appState.settings.coefficientTypes[key].values.length !== 12) {
+                        appState.settings.coefficientTypes[key].values = Array(12).fill(0); 
+                    }
                  }
+                 if (key === 'IPC') {
+                      const manualIPC = appState.settings.ipcManual;
+                      if (!Array.isArray(manualIPC) || manualIPC.length !== 12) appState.settings.ipcManual = Array(12).fill(0);
+                       appState.settings.coefficientTypes[key].values = [...appState.settings.ipcManual.map(v => parseFloat(v||0))];
+                  } else if (key === 'None') {
+                       appState.settings.coefficientTypes[key].values = Array(12).fill(0); 
+                  } else { 
+                       appState.settings.coefficientTypes[key].values = appState.settings.coefficientTypes[key].values.map(val => (!isNaN(parseFloat(val)) && parseFloat(val) >= -100) ? parseFloat(val) : 0);
+                  }
              }
          }
 
         // --- Lógica de Negocio y Cálculos ---
-        function calculateAll(scenarioData) {
+        function calculateAll(scenarioData) { 
              if (!scenarioData) { renderEmptyState(); return; }
-             initializeScenarioDataForRubros(scenarioData); // Asegura que todas las estructuras estén presentes y correctas
-             const { data, reserveFund } = scenarioData; const { settings } = appState; const { rubroConfig, coefficientTypes, cantidadUnidades } = settings;
+             initializeScenarioDataForRubros(scenarioData); 
+             ensureDefaultCoefficientTypes(); 
+
+             const { data, reserveFund, monthStatus } = scenarioData; 
+             const { settings } = appState; const { rubroConfig, coefficientTypes, cantidadUnidades } = settings;
              const calculated = scenarioData.calculated;
+
+             if (!Array.isArray(calculated.monthOverallStatus) || calculated.monthOverallStatus.length !== 12) {
+                calculated.monthOverallStatus = Array(12).fill('Estimado');
+             }
+             for (let i = 0; i < 12; i++) {
+                calculated.monthOverallStatus[i] = getMonthOverallStatus(i, scenarioData);
+             }
+
              calculated.ipcManual = Array.isArray(settings.ipcManual) && settings.ipcManual.length === 12 ? [...settings.ipcManual.map(v=>parseFloat(v||0))] : Array(12).fill(0);
              calculated.gastoAjustado = {}; calculated.totalGastoRubroMes = {}; calculated.totalGastoProyectadoMes = Array(12).fill(0);
              calculated.ingresoAjustado = {}; calculated.totalIngresoRubroMes = {}; calculated.totalIngresoProyectadoMes = Array(12).fill(0);
@@ -1292,17 +1461,13 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                  calculated.gastoAjustado[rubro] = {}; calculated.totalGastoRubroMes[rubro] = Array(12).fill(0); calculated.annualTotals.gastos[rubro] = 0;
                  const detailOrder = (data.gastos[rubro].detailOrder?.length > 0 ? data.gastos[rubro].detailOrder : Object.keys(data.gastos[rubro].detailsData || {})).filter(d => Array.isArray(data.gastos[rubro].detailsData?.[d]) && data.gastos[rubro].detailsData[d].length === 12);
                  if (detailOrder.length === 0) return;
-                 const coefKey = rubroConfig[rubro]?.coefficientType || 'None'; const coefType = coefficientTypes[coefKey];
-                 const monthlyMultipliers = Array(12).fill(1);
-                 if (coefType && coefKey !== 'None' && Array.isArray(coefType.values) && coefType.values.length === 12) {
-                    for(let i=0; i<12; i++) { const perc = parseFloat(coefType.values[i]||0); if(!isNaN(perc)) monthlyMultipliers[i] = 1 + perc/100; }
-                 }
+                                  
                  detailOrder.forEach(detail => {
                      const srcVals = (data.gastos[rubro].detailsData[detail] || []).map(v => parseFloat(v||0));
-                     const adjVals = srcVals.map((val, idx) => val * (monthlyMultipliers[idx] ?? 1));
-                     calculated.gastoAjustado[rubro][detail] = adjVals;
-                     for (let i=0; i<12; i++) calculated.totalGastoRubroMes[rubro][i] += (adjVals[i]||0);
+                     calculated.gastoAjustado[rubro][detail] = [...srcVals]; 
+                     for (let i=0; i<12; i++) calculated.totalGastoRubroMes[rubro][i] += (srcVals[i]||0);
                  });
+
                  for (let i=0; i<12; i++) calculated.totalGastoProyectadoMes[i] += (calculated.totalGastoRubroMes[rubro]?.[i]||0);
                  calculated.annualTotals.gastos[rubro] = (calculated.totalGastoRubroMes[rubro]||[]).reduce((a,b)=>a+(b||0),0);
              });
@@ -1342,12 +1507,15 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              if (baseEneroCuota > 0) {
                  let accMult = 1;
                  for (let i=0; i<12; i++) { accMult *= (!isNaN(ipcSnap[i]) && ipcSnap[i]>=0 ? (1+ipcSnap[i]/100) : 1); calculated.cuotaIpcMes[i] = baseEneroCuota * accMult; }
+             } else { 
+                 calculated.cuotaIpcMes = Array(12).fill(0);
              }
              calculated.annualTotals.cuotaIpc = (calculated.cuotaIpcMes||[]).reduce((a,b)=>a+(b||0),0);
-             saveState(); updateUI(); showSnackbar("Cálculos actualizados.", false, 'success');
+             saveState(); updateUI(); 
         }
 
         function recalculateEstimates() {
+            ensureDefaultCoefficientTypes(); 
             const scenarioData = getCurrentScenarioData(); if (!scenarioData) { showSnackbar("No hay escenario activo.", true, 'error'); return; }
             const { data, monthStatus, rubroOrder } = scenarioData; const { settings } = appState; const { rubroConfig, coefficientTypes } = settings;
             let changesMade = false; let projectedCellCount = 0; let totalDetailsProcessed = 0;
@@ -1359,27 +1527,54 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                 if (!data.gastos?.[rubro]?.detailsData) return;
                 const detailOrder = (data.gastos[rubro].detailOrder?.length > 0 ? data.gastos[rubro].detailOrder : Object.keys(data.gastos[rubro].detailsData||{})).filter(d => Array.isArray(data.gastos[rubro].detailsData?.[d]) && data.gastos[rubro].detailsData[d].length === 12);
                 if (detailOrder.length === 0) return; totalDetailsProcessed += detailOrder.length;
-                const coefKey = rubroConfig[rubro]?.coefficientType || 'None'; const coefType = coefficientTypes[coefKey];
-                const monthlyMultipliers = Array(12).fill(1);
-                if (coefType && coefKey !== 'None' && Array.isArray(coefType.values) && coefType.values.length === 12) {
-                   for(let i=0; i<12; i++) { const perc = parseFloat(coefType.values[i]||0); if(!isNaN(perc)) monthlyMultipliers[i] = 1 + perc/100; }
-                }
+                
+                const coefKey = rubroConfig[rubro]?.coefficientType || 'None';
+                const coefType = coefficientTypes[coefKey];
+                
+                const monthlyPercentageIncreases = (coefType && Array.isArray(coefType.values) && coefType.values.length === 12)
+                    ? coefType.values.map(v => parseFloat(v || 0))
+                    : Array(12).fill(0);
+
                 detailOrder.forEach(detail => {
                     const statuses = (monthStatus.gastos?.[rubro]?.[detail]?.length === 12 ? monthStatus.gastos[rubro][detail] : Array(12).fill('Estimado'));
                     const dataVals = (data.gastos[rubro].detailsData[detail]||[]).map(v=>parseFloat(v||0));
-                    let lastRealIdx = -1; for (let i=11; i>=0; i--) if(statuses[i]==='REAL'){lastRealIdx=i; break;}
-                    if (lastRealIdx === -1 || lastRealIdx === 11) return;
-                    let prevVal = dataVals[lastRealIdx];
-                    for (let j = lastRealIdx + 1; j < 12; j++) {
+                    
+                    let lastRealIdx = -1; 
+                    for (let i = 11; i >= 0; i--) {
+                        if(statuses[i]==='REAL'){
+                            lastRealIdx=i; 
+                            break;
+                        }
+                    }
+
+                    if (lastRealIdx === -1) return;
+                    if (lastRealIdx === 11) return;
+
+                    let previousMonthValue = dataVals[lastRealIdx]; 
+
+                    for (let j = lastRealIdx + 1; j < 12; j++) { 
                         if (statuses[j] === 'Estimado') {
-                            const projVal = prevVal * monthlyMultipliers[j]; data.gastos[rubro].detailsData[detail][j] = projVal;
-                            changesMade = true; projectedCellCount++; prevVal = projVal;
-                        } else if (statuses[j] === 'REAL') prevVal = dataVals[j];
+                            const percentageIncreaseForMonthJ = monthlyPercentageIncreases[j];
+                            const multiplierForMonthJ = 1 + (percentageIncreaseForMonthJ / 100);
+                            
+                            const projectedValue = previousMonthValue * multiplierForMonthJ;
+                            
+                            data.gastos[rubro].detailsData[detail][j] = projectedValue;
+                            monthStatus.gastos[rubro][detail][j] = 'Estimado'; 
+                            changesMade = true; 
+                            projectedCellCount++;
+                            previousMonthValue = projectedValue; 
+                        } else if (statuses[j] === 'REAL') {
+                            previousMonthValue = dataVals[j];
+                        }
                     }
                 });
             });
             if (totalDetailsProcessed === 0) { showSnackbar("No se encontraron detalles de gastos válidos para proyectar.", false, 'info'); return; }
-            if (changesMade) { showSnackbar(`Estimados recalculados (${projectedCellCount} celdas). Actualizando...`, false, 'info'); calculateAll(scenarioData); }
+            if (changesMade) { 
+                showSnackbar(`Estimados recalculados (${projectedCellCount} celdas). Actualizando...`, false, 'info'); 
+                calculateAll(scenarioData); 
+            }
             else showSnackbar("No se necesitaron cambios en los estimados.", false, 'info');
         }
 
@@ -1390,12 +1585,14 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             if (ufInput) ufInput.value = appState.settings.cantidadUnidades;
             updateRubroList('gastos', 'gasto-rubro-list'); updateRubroList('ingresos', 'ingreso-rubro-list');
             ensureDefaultCoefficientTypes(); updateCoefficientTypeList();
+            
             const currentEditing = appState.uiState.editingCoefficientType;
-            const typeData = appState.settings.coefficientTypes?.[currentEditing];
-            if (currentEditing && typeData && currentEditing !== 'None' && currentEditing !== 'IPC') renderCoefficientValuesEditor(currentEditing);
-            else {
-                document.getElementById('coefficient-values-editor').innerHTML = '<p class="text-muted">Selecciona un tipo de coeficiente (que no sea "Sin Coeficiente" o "IPC") de la lista de la izquierda para editar sus valores.</p>';
+            if (currentEditing && appState.settings.coefficientTypes?.[currentEditing]) {
+                 renderCoefficientValuesEditor(currentEditing);
+            } else { 
+                document.getElementById('coefficient-values-editor').innerHTML = '<p class="text-muted">Selecciona un tipo de coeficiente de la lista de la izquierda para editar/ver sus valores porcentuales (%) mes a mes.</p>';
                 document.getElementById('editing-coefficient-name').textContent = 'Ninguno';
+                document.getElementById('ipc-editor-note').style.display = 'none';
                 appState.uiState.editingCoefficientType = null;
             }
             updateIPCManualInputs();
@@ -1408,47 +1605,74 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const reserveData = (scenarioData?.reserveFund?.values?.length===12 && typeof scenarioData.reserveFund.type==='string') ? scenarioData.reserveFund : defReserve;
              const typeFromState = reserveData.type==='fixed'?'fixed':'percent'; pRadio.checked=typeFromState==='percent'; fRadio.checked=typeFromState==='fixed';
              const inputs = panel.querySelectorAll('input[type="number"]');
-             if (inputs.length === 12) { // Si los inputs ya existen, solo actualizar sus valores y propiedades
+             if (inputs.length === 12) { 
                    inputs.forEach((input, i) => { input.value = parseFloat(reserveData.values[i]||0) || (typeFromState==='fixed'?0:5); });
-                   updateReserveUI(); // Esto actualizará step, placeholder, title.
-             } else renderReserveFundInputsInPanel(panel, reserveData); // Si no, reconstruir
+                   updateReserveUI(); 
+             } else renderReserveFundInputsInPanel(panel, reserveData); 
         }
 
         function updateCollapsibleTable(type, scenarioData) {
              const table = document.getElementById(`${type}-detail-table`); if (!table) return;
              const thead = table.querySelector('thead'); const tbody = table.querySelector('tbody'); const tfoot = table.querySelector('tfoot'); if (!thead || !tbody || !tfoot) return;
-             tbody.innerHTML = ''; tfoot.innerHTML = '';
+             tbody.innerHTML = ''; 
+             
              const expectedHdrCount = (type==='gastos'?2:1)+MONTHS.length+1;
-             if (!scenarioData?.data || !scenarioData.calculated || !appState.settings) { tbody.innerHTML=`<tr><td colspan="${thead.querySelector('tr')?.cells.length||expectedHdrCount}" class="text-muted" style="text-align:center;padding:20px;">Faltan datos.</td></tr>`; ensureCollapsibleTableHeaderFooterCells(thead,tfoot,type); return; }
+             if (!scenarioData?.data || !scenarioData.calculated || !scenarioData.monthStatus || !appState.settings) { 
+                tbody.innerHTML=`<tr><td colspan="${thead.querySelector('tr')?.cells.length||expectedHdrCount}" class="text-muted" style="text-align:center;padding:20px;">Faltan datos.</td></tr>`; 
+                ensureCollapsibleTableHeaderFooterCells(thead,tfoot,type); 
+                updateCollapsibleTableFooters(null);
+                return; 
+            }
              const { data, calculated, monthStatus, rubroOrder } = scenarioData;
              const globalRubros = appState.settings.rubros?.[type] || [];
              const rubrosToDisplay = (rubroOrder?.[type]?.length>0 ? rubroOrder[type] : globalRubros).filter(r => globalRubros.includes(r) && data[type]?.[r]?.detailsData);
-             ensureCollapsibleTableHeaderFooterCells(thead, tfoot, type);
-             if (rubrosToDisplay.length === 0) { tbody.innerHTML=`<tr><td colspan="${thead.querySelector('tr')?.cells.length||expectedHdrCount}" class="text-muted" style="text-align:center;padding:20px;">No hay rubros.</td></tr>`; return; }
+             
+             ensureCollapsibleTableHeaderFooterCells(thead, tfoot, type); 
+
+             if (rubrosToDisplay.length === 0) { 
+                tbody.innerHTML=`<tr><td colspan="${thead.querySelector('tr')?.cells.length||expectedHdrCount}" class="text-muted" style="text-align:center;padding:20px;">No hay rubros.</td></tr>`; 
+                updateCollapsibleTableFooters(scenarioData); 
+                return; 
+            }
 
              rubrosToDisplay.forEach(rubro => {
                  if (!data[type]?.[rubro]?.detailsData || !calculated[type==='gastos'?'gastoAjustado':'ingresoAjustado']?.[rubro] || !calculated[type==='gastos'?'totalGastoRubroMes':'totalIngresoRubroMes']?.[rubro] || calculated.annualTotals?.[type]?.[rubro]===undefined) return;
                  const rubroData = data[type][rubro];
                  const detailsToDisplay = (rubroData.detailOrder?.length>0 ? rubroData.detailOrder : Object.keys(rubroData.detailsData||{})).filter(d => Array.isArray(rubroData.detailsData?.[d])&&rubroData.detailsData[d].length===12 && Array.isArray(calculated[type==='gastos'?'gastoAjustado':'ingresoAjustado'][rubro]?.[d]) && calculated[type==='gastos'?'gastoAjustado':'ingresoAjustado'][rubro][d].length===12);
-                 if (detailsToDisplay.length === 0) return;
+                 
+                 if (detailsToDisplay.length === 0 && Object.keys(data[type][rubro].detailsData).length === 0) { 
+                    return; 
+                 }
                  const isCollapsed = appState.settings.rubroConfig?.[rubro]?.detailsCollapsed ?? true;
                  const totalRow = tbody.insertRow(); totalRow.className = `rubro-total-row${isCollapsed?' collapsed':''}`; totalRow.dataset.rubro=rubro; totalRow.dataset.type=type;
-                 totalRow.insertCell().textContent = rubro; if(type==='gastos') totalRow.insertCell().textContent = ''; // Placeholder para coef
+                 totalRow.insertCell().textContent = rubro; if(type==='gastos') totalRow.insertCell().textContent = ''; 
                  (calculated[type==='gastos'?'totalGastoRubroMes':'totalIngresoRubroMes'][rubro]||Array(12).fill(0)).forEach(v=>{const c=totalRow.insertCell();c.textContent=formatCurrency(v);c.classList.add('number-cell');});
                  const cellAnnTotal=totalRow.insertCell(); cellAnnTotal.textContent=formatCurrency(calculated.annualTotals[type][rubro]||0); cellAnnTotal.classList.add('number-cell');
                  const coefName = type==='gastos'?(appState.settings.coefficientTypes[appState.settings.rubroConfig[rubro]?.coefficientType||'None']?.name||'N/A'):'';
+
                  detailsToDisplay.forEach(detail => {
                      const detailVals = calculated[type==='gastos'?'gastoAjustado':'ingresoAjustado'][rubro][detail];
-                     const detailStatuses = type==='gastos' && monthStatus.gastos?.[rubro]?.[detail]?.length===12 ? monthStatus.gastos[rubro][detail].map(s=>String(s||'Estimado')) : Array(12).fill('Estimado');
+                     let detailStatuses = Array(12).fill('Estimado'); 
+                     if (monthStatus?.[type]?.[rubro]?.[detail]?.length === 12) { 
+                         detailStatuses = monthStatus[type][rubro][detail].map(s => String(s || 'Estimado'));
+                     }
+
                      const detailRow=tbody.insertRow(); detailRow.className=`detail-row${isCollapsed?' hidden':''}`; detailRow.dataset.rubro=rubro; detailRow.dataset.type=type;
                      const cellDName=detailRow.insertCell(); cellDName.textContent=detail; cellDName.classList.add('text-muted');
                      if(type==='gastos'){const cCoef=detailRow.insertCell();cCoef.textContent=coefName;cCoef.classList.add('text-muted');}
                      let annualDetTotal=0;
-                     detailVals.forEach((val,idx)=>{ const c=detailRow.insertCell();c.textContent=formatCurrency(val||0);c.classList.add('number-cell'); if(type==='gastos')c.classList.add(detailStatuses[idx]==='REAL'?'real-month-cell':'estimated-month-cell'); annualDetTotal+=(val||0);});
+                     detailVals.forEach((val,idx)=>{ 
+                         const c=detailRow.insertCell();
+                         c.textContent=formatCurrency(val||0);
+                         c.classList.add('number-cell'); 
+                         c.classList.add(detailStatuses[idx]==='REAL'?'real-month-cell':'estimated-month-cell'); 
+                         annualDetTotal+=(val||0);
+                     });
                      const cellAnnDet=detailRow.insertCell(); cellAnnDet.textContent=formatCurrency(annualDetTotal); cellAnnDet.classList.add('number-cell');
                  });
              });
-             addCollapsibleListeners(); // Asegura que los listeners se añadan si es necesario
+             updateCollapsibleTableFooters(scenarioData); 
+             addCollapsibleListeners(); 
         }
 
         function updateCharts(scenarioData) {
@@ -1486,20 +1710,47 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         function updateDashboardTables(scenarioData) {
             const summaryTable = document.getElementById('dashboard-summary'); if (!summaryTable) return;
             const tbody = summaryTable.querySelector('tbody'); const tfoot = summaryTable.querySelector('tfoot'); if (!tbody || !tfoot) return;
-            tbody.innerHTML = ''; tfoot.innerHTML = '';
-            if (!scenarioData?.calculated) { tbody.innerHTML = `<tr><td colspan="${summaryTable.querySelector('thead tr')?.cells.length||7}" class="text-muted" style="text-align:center;padding:20px;">No hay datos.</td></tr>`; return; }
-            const { calculated } = scenarioData; const annuals = calculated.annualTotals || {};
-            for (let i = 0; i < 12; i++) {
-                const r=tbody.insertRow(); r.insertCell().textContent=MONTHS[i];
-                r.insertCell().textContent=formatCurrency(calculated.totalGastoProyectadoMes?.[i]||0); r.insertCell().textContent=formatCurrency(calculated.fondoReservaMes?.[i]||0);
-                r.insertCell().textContent=formatCurrency(calculated.cuotaSobreGastosMes?.[i]||0); r.insertCell().textContent=`${(calculated.ipcManual?.[i]||0).toFixed(1)}%`;
-                r.insertCell().textContent=formatCurrency(calculated.cuotaIpcMes?.[i]||0); r.insertCell().textContent=formatCurrency(calculated.cuotaRealBaseMes?.[i]||0);
+            tbody.innerHTML = ''; tfoot.innerHTML = ''; 
+
+            if (!scenarioData?.calculated) { 
+                tbody.innerHTML = `<tr><td colspan="${summaryTable.querySelector('thead tr')?.cells.length||7}" class="text-muted" style="text-align:center;padding:20px;">No hay datos.</td></tr>`; 
+                tfoot.innerHTML = ''; 
+                updateCollapsibleTable('gastos', scenarioData); 
+                updateCollapsibleTable('ingresos', scenarioData);
+                return; 
             }
-            const fr=tfoot.insertRow(); fr.insertCell().textContent="TOTAL ANUAL"; fr.cells[0].style.fontWeight="bold";
-            fr.insertCell().textContent=formatCurrency(annuals.gastos?.__TOTAL__||0); fr.cells[1].style.fontWeight="bold"; fr.insertCell().textContent=formatCurrency(annuals.fondoReserva||0); fr.cells[2].style.fontWeight="bold";
-            fr.insertCell().textContent=formatCurrency(annuals.cuotaSobreGastos||0); fr.cells[3].style.fontWeight="bold"; fr.insertCell().textContent="-";
-            fr.insertCell().textContent=formatCurrency(annuals.cuotaIpc||0); fr.cells[5].style.fontWeight="bold"; fr.insertCell().textContent=formatCurrency(annuals.cuotaRealBase||0); fr.cells[6].style.fontWeight="bold";
-            updateCollapsibleTable('gastos', scenarioData); updateCollapsibleTable('ingresos', scenarioData);
+            
+            const { calculated } = scenarioData; 
+            const annuals = calculated.annualTotals || {};
+            const monthOverallStatuses = calculated.monthOverallStatus || Array(12).fill('Estimado');
+
+            for (let i = 0; i < 12; i++) {
+                const r = tbody.insertRow(); 
+                const overallStatusClass = monthOverallStatuses[i] === 'REAL' ? 'real-month-cell' : 'estimated-month-cell';
+                
+                r.insertCell().textContent = MONTHS[i]; 
+                
+                let cell = r.insertCell(); cell.textContent = formatCurrency(calculated.totalGastoProyectadoMes?.[i]||0); cell.classList.add(overallStatusClass);
+                cell = r.insertCell(); cell.textContent = formatCurrency(calculated.fondoReservaMes?.[i]||0); cell.classList.add(overallStatusClass);
+                cell = r.insertCell(); cell.textContent = formatCurrency(calculated.cuotaSobreGastosMes?.[i]||0); cell.classList.add(overallStatusClass);
+                
+                r.insertCell().textContent = `${(calculated.ipcManual?.[i]||0).toFixed(1)}%`; 
+
+                cell = r.insertCell(); cell.textContent = formatCurrency(calculated.cuotaIpcMes?.[i]||0); cell.classList.add(overallStatusClass);
+                cell = r.insertCell(); cell.textContent = formatCurrency(calculated.cuotaRealBaseMes?.[i]||0); cell.classList.add(overallStatusClass);
+            }
+            
+            const fr = tfoot.insertRow(); 
+            fr.insertCell().textContent="TOTAL ANUAL"; fr.cells[0].style.fontWeight="bold";
+            fr.insertCell().textContent=formatCurrency(annuals.gastos?.__TOTAL__||0); fr.cells[1].style.fontWeight="bold"; 
+            fr.insertCell().textContent=formatCurrency(annuals.fondoReserva||0); fr.cells[2].style.fontWeight="bold";
+            fr.insertCell().textContent=formatCurrency(annuals.cuotaSobreGastos||0); fr.cells[3].style.fontWeight="bold"; 
+            fr.insertCell().textContent="-";
+            fr.insertCell().textContent=formatCurrency(annuals.cuotaIpc||0); fr.cells[5].style.fontWeight="bold"; 
+            fr.insertCell().textContent=formatCurrency(annuals.cuotaRealBase||0); fr.cells[6].style.fontWeight="bold";
+            
+            updateCollapsibleTable('gastos', scenarioData); 
+            updateCollapsibleTable('ingresos', scenarioData);
         }
 
         function updateScenarioSelector() {
@@ -1540,6 +1791,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             destroyChart('participacionIngresosChart'); displayChartNoData('participacionIngresosChart', true);
             document.getElementById('coefficient-values-editor').innerHTML = '<p class="text-muted">Selecciona un tipo para editar.</p>';
             document.getElementById('editing-coefficient-name').textContent = 'Ninguno';
+            document.getElementById('ipc-editor-note').style.display = 'none';
             if(appState.uiState) appState.uiState.editingCoefficientType = null;
             const pRadio=document.getElementById('reserve-type-percent'); const fRadio=document.getElementById('reserve-type-fixed');
             if(pRadio && fRadio) { const defType=(getDefaultAppState().BaseScenarioStructureTemplate.reserveFund || {}).type || 'percent'; pRadio.checked=((getCurrentScenarioData()?.reserveFund?.type) ?? defType)==='percent';fRadio.checked=!pRadio.checked; updateReserveUI(); }
@@ -1572,7 +1824,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                     if (!localStorage.getItem('theme')) { appState.darkMode = event.matches; applyTheme(true); saveState(); }
                  });
             }
-            applyTheme(false); // Apply theme without forcing chart updates if not necessary yet
+            applyTheme(false); 
         }
 
         function toggleTheme() {
@@ -1649,7 +1901,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const select = event.target; const rubro = select.dataset.rubro; const newCoefType = select.value;
              if (rubro && newCoefType !== undefined && appState.settings.rubroConfig) {
                  appState.settings.rubroConfig[rubro] = appState.settings.rubroConfig[rubro] ?? {};
-                 appState.settings.rubroConfig[rubro].coefficientType = newCoefType; saveState(); // No es necesario recalcular aquí, solo al guardar settings
+                 appState.settings.rubroConfig[rubro].coefficientType = newCoefType; saveState();
                  showSnackbar(`Coeficiente para "${rubro}" asignado. Guarda configuración para recalcular.`, false, 'info');
              } else showSnackbar("Error al asignar coeficiente.", true, 'error');
          }
@@ -1658,9 +1910,20 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              const input=event.target; const monthIdx=parseInt(input.dataset.month); const typeKey=input.dataset.typeKey; const value=parseFloat(input.value);
              const typeData=appState.settings.coefficientTypes?.[typeKey];
              if(!typeKey||!typeData||isNaN(monthIdx)||monthIdx<0||monthIdx>11){ input.value=typeData?.values?.[monthIdx]||0; showSnackbar("Error: Coeficiente/mes inválido.",true,'error'); return;}
-             const isNone = typeKey==='None'; const isValid = !isNaN(value)&&(isNone||value>=-100);
-             if(isValid){ if(!Array.isArray(typeData.values)||typeData.values.length!==12)typeData.values=Array(12).fill(isNone?1:0); typeData.values[monthIdx]=value; saveState(); }
-             else { input.value=typeData.values[monthIdx]||(isNone?1:0); showSnackbar(`Valor inválido para ${FULL_MONTHS[monthIdx]}. Debe ser >= -100.`,true,'error'); }
+             
+             if (typeKey === 'None' || typeKey === 'IPC') {
+                 input.value = typeData.values[monthIdx] || 0; 
+                 showSnackbar(`"${typeData.name}" no se edita aquí.`, false, 'warning');
+                 return;
+             }
+
+             const isValid = !isNaN(value) && value >= -100;
+             if(isValid){ 
+                if(!Array.isArray(typeData.values)||typeData.values.length!==12) typeData.values=Array(12).fill(0); 
+                typeData.values[monthIdx]=value; 
+                saveState(); 
+             }
+             else { input.value=typeData.values[monthIdx]||0; showSnackbar(`Valor inválido para ${FULL_MONTHS[monthIdx]}. Debe ser >= -100.`,true,'error'); }
          }
 
         function addRubro(type) {
@@ -1704,7 +1967,7 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             Object.values(appState.settings.rubroConfig).forEach(rc => { if (rc.coefficientType === typeKey) rc.coefficientType = 'None'; });
             if (appState.uiState.editingCoefficientType === typeKey) {
                 appState.uiState.editingCoefficientType = null;
-                renderCoefficientValuesEditor(null); // Limpia el editor
+                renderCoefficientValuesEditor(null);
             }
             updateCoefficientTypeList();
             updateRubroList('gastos', 'gasto-rubro-list');
@@ -1712,16 +1975,8 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         }
 
         function editCoefficientType(typeKey) {
-            if (typeKey === 'None' || typeKey === 'IPC') {
-                const editorDiv = document.getElementById('coefficient-values-editor');
-                const nameSpan = document.getElementById('editing-coefficient-name');
-                if(nameSpan) nameSpan.textContent = appState.settings.coefficientTypes[typeKey]?.name || 'Error';
-                if(editorDiv) editorDiv.innerHTML = `<p class="text-muted">Los valores para "${appState.settings.coefficientTypes[typeKey]?.name}" no se editan aquí directamente.</p>`;
-                appState.uiState.editingCoefficientType = typeKey;
-                return;
-            }
             appState.uiState.editingCoefficientType = typeKey;
-            renderCoefficientValuesEditor(typeKey);
+            renderCoefficientValuesEditor(typeKey); 
         }
 
         function createNewExercise() {
@@ -1776,7 +2031,9 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
         function saveSettings() {
             const ufInput = document.getElementById('cantidad-unidades'); const cantidadUF = parseInt(ufInput.value);
             if(isNaN(cantidadUF)||cantidadUF<1){showSnackbar("UF inválida. Debe ser >= 1.",true,'error');ufInput.value=appState.settings.cantidadUnidades;return;}
-            appState.settings.cantidadUnidades=cantidadUF; const scenario=getCurrentScenarioData();
+            appState.settings.cantidadUnidades=cantidadUF; 
+            ensureDefaultCoefficientTypes(); 
+            const scenario=getCurrentScenarioData();
             if(!scenario){showSnackbar("No hay escenario activo para aplicar config.",true,'error');saveState();updateSettingsPanel();return;}
             showSnackbar("Configuración guardada. Recalculando...",false,'info'); calculateAll(scenario);
         }
@@ -1795,16 +2052,31 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
                     [GASTOS_SHEET_NAME,INGRESOS_SHEET_NAME].forEach((sheetName,idx)=>{
                         const type = idx===0?'gastos':'ingresos'; const sheet = workbook.Sheets[sheetName];
                         if(sheet){ const jsonData=XLSX.utils.sheet_to_json(sheet,{header:1,blankrows:false});
-                            if(jsonData.length>1){ scenario.data[type]={}; if(type==='gastos')scenario.monthStatus.gastos={}; if(!Array.isArray(appState.settings.rubros[type]))appState.settings.rubros[type]=[];
+                            if(jsonData.length>1){ 
+                                scenario.data[type]={}; 
+                                if(!scenario.monthStatus[type]) scenario.monthStatus[type] = {}; else scenario.monthStatus[type]={};
+
+                                if(!Array.isArray(appState.settings.rubros[type]))appState.settings.rubros[type]=[];
                                 for(let i=1;i<jsonData.length;i++){ const row=jsonData[i],rName=String(row[0]||'').trim(),dName=String(row[1]||'').trim(); if(!rName||!dName)continue;
                                     if(!appState.settings.rubros[type].includes(rName)){appState.settings.rubros[type].push(rName);(type==='gastos'?newGR:newIR).push(rName);appState.settings.rubroConfig[rName]=appState.settings.rubroConfig[rName]||{coefficientType:'None',detailsCollapsed:true};}
                                     if(!scenario.rubroOrder[type].includes(rName))scenario.rubroOrder[type].push(rName);
-                                    if(!scenario.data[type][rName]){scenario.data[type][rName]={detailOrder:[],detailsData:{}};if(type==='gastos')scenario.monthStatus.gastos[rName]={};}
+                                    
+                                    if(!scenario.data[type][rName]){scenario.data[type][rName]={detailOrder:[],detailsData:{}};}
+                                    if(!scenario.monthStatus[type][rName]){scenario.monthStatus[type][rName]={};}
+
                                     if(!scenario.data[type][rName].detailOrder.includes(dName)){scenario.data[type][rName].detailOrder.push(dName);const newDetailsArray=(type==='gastos'?newGD:newID);if(!newDetailsArray[rName])newDetailsArray[rName]=[];if(!newDetailsArray[rName].includes(dName))newDetailsArray[rName].push(dName);}
-                                    scenario.data[type][rName].detailsData[dName]=[];if(type==='gastos')scenario.monthStatus.gastos[rName][dName]=[];
+                                    
+                                    scenario.data[type][rName].detailsData[dName]=[];
+                                    scenario.monthStatus[type][rName][dName]=[];
+
                                     for(let m=0;m<12;m++){ const cellVal=row[2+m],numVal=parseFloat(cellVal);
-                                        if(type==='gastos'){if(typeof cellVal==='number'&&!isNaN(numVal)){scenario.data.gastos[rName].detailsData[dName][m]=numVal;scenario.monthStatus.gastos[rName][dName][m]='REAL';}else{scenario.data.gastos[rName].detailsData[dName][m]=0;scenario.monthStatus.gastos[rName][dName][m]='Estimado';}}
-                                        else scenario.data.ingresos[rName].detailsData[dName][m]=(typeof cellVal==='number'&&!isNaN(numVal))?numVal:0;
+                                        if(typeof cellVal==='number'&&!isNaN(numVal)){
+                                            scenario.data[type][rName].detailsData[dName][m]=numVal;
+                                            scenario.monthStatus[type][rName][dName][m]='REAL';
+                                        }else{
+                                            scenario.data[type][rName].detailsData[dName][m]=0;
+                                            scenario.monthStatus[type][rName][dName][m]='Estimado';
+                                        }
                                     }} processed=true;
                             } else feedbackDiv.textContent+=`\nHoja "${sheetName}" vacía/malformada.`;
                         } else feedbackDiv.textContent+=`\nHoja "${sheetName}" no encontrada.`;
@@ -1832,33 +2104,228 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
             appState.settings.cantidadUnidades=150; appState.settings.ipcManual=[1,1.2,0.8,1.5,2,1.3,1,0.5,0.7,1.1,1.4,1]; ensureDefaultCoefficientTypes();
             appState.settings.coefficientTypes["SueldosAdmin"]={name:"Sueldos Admin",values:Array(12).fill(2.5),isDefault:false};
             appState.settings.rubroConfig={"Seguridad":{coefficientType:"UTEDYC",detailsCollapsed:false},"Mantenimiento":{coefficientType:"IPC",detailsCollapsed:true},"Administración":{coefficientType:"SueldosAdmin",detailsCollapsed:false},[CUOTA_RUBRO_NAME]:{detailsCollapsed:false},"Alquiler SUM":{detailsCollapsed:true},"Intereses Plazo Fijo":{detailsCollapsed:false}};
+            
             scenario.data.gastos={"Seguridad":{detailOrder:["Vigiladores","Monitoreo"],detailsData:{"Vigiladores":[100000,101000,102000,103000,110000,111000,112000,113000,120000,121000,122000,123000],"Monitoreo":Array(12).fill(25000)}},"Mantenimiento":{detailOrder:["Limpieza","Jardinería"],detailsData:{"Limpieza":Array(12).fill(30000),"Jardinería":[15000,15000,16000,16000,17000,17000,18000,18000,19000,19000,20000,20000]}},"Administración":{detailOrder:["Honorarios Admin","Gastos Bancarios"],detailsData:{"Honorarios Admin":Array(12).fill(50000),"Gastos Bancarios":Array(12).fill(5000)}}};
             scenario.monthStatus.gastos={"Seguridad":{"Vigiladores":Array(12).fill('REAL'),"Monitoreo":Array(12).fill('REAL')},"Mantenimiento":{"Limpieza":Array(12).fill('REAL'),"Jardinería":Array(12).fill('REAL')},"Administración":{"Honorarios Admin":Array(12).fill('REAL'),"Gastos Bancarios":Array(12).fill('REAL')}};
             scenario.rubroOrder.gastos=["Seguridad","Mantenimiento","Administración"];
+            
             scenario.data.ingresos={[CUOTA_RUBRO_NAME]:{detailOrder:["Cuota Base UF"],detailsData:{"Cuota Base UF":Array(12).fill(35.5)}},"Alquiler SUM":{detailOrder:["Eventos FinDeSemana"],detailsData:{"Eventos FinDeSemana":[5000,0,7000,0,10000,0,12000,0,8000,0,6000,0]}},"Intereses Plazo Fijo":{detailOrder:["Fondo Común Inv."],detailsData:{"Fondo Común Inv.":[1000,1100,1050,1200,1150,1300,1250,1400,1350,1500,1450,1600]}}};
+            scenario.monthStatus.ingresos = { 
+                [CUOTA_RUBRO_NAME]:{"Cuota Base UF":Array(12).fill('REAL')},
+                "Alquiler SUM":{"Eventos FinDeSemana":Array(12).fill('REAL')}, 
+                "Intereses Plazo Fijo":{"Fondo Común Inv.":Array(12).fill('REAL')}
+            };
             scenario.rubroOrder.ingresos=[CUOTA_RUBRO_NAME,"Alquiler SUM","Intereses Plazo Fijo"];
+            
             scenario.reserveFund={type:'percent',values:[5,5,5,6,6,6,7,7,7,8,8,8]};
             initializeScenarioDataForRubros(scenario); calculateAll(scenario); updateSettingsPanel(); showSnackbar("Datos de ejemplo cargados.",false,'success');
         }
+        
+        function xlsxCellStyle(options = {}) {
+            const {
+                fontName = "Arial", fontSize = 10, bold = false, italic = false, colorRGB = "000000",
+                hAlign = "left", vAlign = "center", wrapText = false,
+                bgColorRGB = null,
+                numFmt = "General",
+                border = {} 
+            } = options;
+
+            const style = { font: {}, alignment: {}, fill: {}, border: {} };
+            style.font = { name: fontName, sz: fontSize, bold: bold, italic: italic, color: { rgb: colorRGB } };
+            style.alignment = { horizontal: hAlign, vertical: vAlign, wrapText: wrapText };
+            if (bgColorRGB) style.fill = { fgColor: { rgb: bgColorRGB } };
+            style.numFmt = numFmt;
+            
+            const borderStyles = ["thin", "medium", "thick", "dotted", "hair", "dashed", "double"];
+            ['top', 'bottom', 'left', 'right'].forEach(side => {
+                if (border[side] && border[side].style && border[side].color?.rgb) { // Check for complete border object
+                    if (borderStyles.includes(border[side].style)) {
+                        style.border[side] = { style: border[side].style, color: { rgb: border[side].color.rgb } };
+                    }
+                } else if (border[side] === true) { 
+                     style.border[side] = { style: "thin", color: { rgb: "000000" } };
+                }
+            });
+            return style;
+        }
 
         function exportToExcel() {
-            const scenario = getCurrentScenarioData(); if(!scenario){showSnackbar("No hay datos para exportar.",true,'error');return;}
-            const wb=XLSX.utils.book_new(); const sumData=[["Mes","Gasto ($)","Fondo ($)","Cuota s/Gs ($/UF)","IPC (%)","Cuota IPC ($/UF)","Expensa Real ($/UF)"]];
-            for(let i=0;i<12;i++)sumData.push([MONTHS[i],scenario.calculated.totalGastoProyectadoMes?.[i]||0,scenario.calculated.fondoReservaMes?.[i]||0,scenario.calculated.cuotaSobreGastosMes?.[i]||0,scenario.calculated.ipcManual?.[i]||0,scenario.calculated.cuotaIpcMes?.[i]||0,scenario.calculated.cuotaRealBaseMes?.[i]||0]);
-            sumData.push(["TOTAL ANUAL",scenario.calculated.annualTotals.gastos?.__TOTAL__||0,scenario.calculated.annualTotals.fondoReserva||0,scenario.calculated.annualTotals.cuotaSobreGastos||0,"-",scenario.calculated.annualTotals.cuotaIpc||0,scenario.calculated.annualTotals.cuotaRealBase||0]);
-            XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sumData),"Resumen General");
-            const gData=[["Rubro","Detalle","Coef. Aplicado",...MONTHS,"Total Anual"]];
-            (appState.settings.rubros?.gastos||[]).forEach(r=>{if(!scenario.data.gastos[r])return; const cfg=appState.settings.rubroConfig[r]||{};const cKey=cfg.coefficientType||'None';const cName=appState.settings.coefficientTypes[cKey]?.name||'N/A';const rTotals=scenario.calculated.totalGastoRubroMes?.[r]||Array(12).fill(0);gData.push([r,"TOTAL RUBRO","",...rTotals,scenario.calculated.annualTotals.gastos?.[r]||0]);(scenario.data.gastos[r]?.detailOrder||[]).forEach(d=>{const dVals=scenario.calculated.gastoAjustado?.[r]?.[d]||Array(12).fill(0);gData.push(["",d,cName,...dVals,dVals.reduce((s,v)=>s+v,0)]);});});
-            XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(gData),"Detalle Gastos");
-            const iData=[["Rubro","Detalle",...MONTHS,"Total Anual"]];
-            (appState.settings.rubros?.ingresos||[]).forEach(r=>{if(!scenario.data.ingresos[r])return; const rTotals=scenario.calculated.totalIngresoRubroMes?.[r]||Array(12).fill(0);iData.push([r,"TOTAL RUBRO (Calculado)",...rTotals,scenario.calculated.annualTotals.ingresos?.[r]||0]);(scenario.data.ingresos[r]?.detailOrder||[]).forEach(d=>{const dBaseVals=scenario.calculated.ingresoAjustado?.[r]?.[d]||Array(12).fill(0);iData.push(["",d+(SPECIAL_INGRESO_RUBROS.includes(r)?" (Valor Base x UF)":" (Valor Base)"),...dBaseVals,dBaseVals.reduce((s,v)=>s+v,0)]);});});
-            XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(iData),"Detalle Ingresos (Base)");
-            const cfgData=[["Parámetro","Valor"],["Año Ejercicio",scenario.year],["Nombre Escenario",scenario.scenarioName],["Cantidad UF",appState.settings.cantidadUnidades],["Fondo Reserva Tipo",scenario.reserveFund.type],...scenario.reserveFund.values.map((v,i)=>[ `Fondo Reserva ${MONTHS[i]}`,v]),...appState.settings.ipcManual.map((v,i)=>[ `IPC Manual ${MONTHS[i]} (%)`,v])];
-            Object.entries(appState.settings.coefficientTypes).forEach(([k,t])=>{cfgData.push([`Coef. Tipo: ${t.name} (${k})`,"Valores Mensuales (%)"]);t.values.forEach((v,i)=>cfgData.push([MONTHS[i],v]));});
-            (appState.settings.rubros?.gastos||[]).forEach(r=>{const cK=appState.settings.rubroConfig[r]?.coefficientType||'None';cfgData.push([`Rubro Gasto: ${r}`,`Coef. Asignado: ${appState.settings.coefficientTypes[cK]?.name||'N/A'}`]);});
-            XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cfgData),"Configuración Aplicada");
-            XLSX.writeFile(wb,`Reporte_Expensas_${scenario.year}_${scenario.scenarioName.replace(/\s+/g,'_')}.xlsx`); showSnackbar("Reporte Excel generado.",false,'success');
+            const scenario = getCurrentScenarioData();
+            if (!scenario) { showSnackbar("No hay datos para exportar.", true, 'error'); return; }
+            const wb = XLSX.utils.book_new();
+
+            const styles = {
+                header: xlsxCellStyle({ bold: true, bgColorRGB: "D9EAD3", hAlign: "center", border: {top:true,bottom:true,left:true,right:true} }),
+                totalRow: xlsxCellStyle({ bold: true, bgColorRGB: "E7E6E6", numFmt: '$#,##0.00_);[Red]($#,##0.00)', border: {top:{style:"medium"}}, hAlign:"right"}),
+                subTotalRow: xlsxCellStyle({ bold: true, bgColorRGB: "F2F2F2", numFmt: '$#,##0.00_);[Red]($#,##0.00)', hAlign:"right"}),
+                realData: xlsxCellStyle({ bgColorRGB: "D1F7D9", numFmt: '$#,##0.00_);[Red]($#,##0.00)', hAlign:"right" }),
+                estimatedData: xlsxCellStyle({ bgColorRGB: "FFE8D6", numFmt: '$#,##0.00_);[Red]($#,##0.00)', hAlign:"right" }),
+                textLeft: xlsxCellStyle({hAlign:"left"}),
+                textCenter: xlsxCellStyle({hAlign:"center"}),
+                textRight: xlsxCellStyle({hAlign:"right"}),
+                currency: xlsxCellStyle({ numFmt: '$#,##0.00_);[Red]($#,##0.00)', hAlign:"right" }),
+                percent: xlsxCellStyle({ numFmt: '0.0%', hAlign:"right" }),
+                sectionTitle: xlsxCellStyle({bold:true, fontSize:12, bgColorRGB:"C9DAF8", border:{bottom:{style:"medium"}}}),
+                paramName: xlsxCellStyle({bold:true, hAlign:"left"}),
+            };
+
+
+            // --- Hoja: Resumen General ---
+            const resumenSheetData = [];
+            const resumenHeaders = ["Mes", "Gasto ($)", "Fondo ($)", "Cuota s/Gs ($/UF)", "IPC (%)", "Cuota IPC ($/UF)", "Expensa Real ($/UF)"];
+            resumenSheetData.push(resumenHeaders.map(h => ({ v: h, s: styles.header })));
+
+            const monthOverallStatuses = scenario.calculated.monthOverallStatus || Array(12).fill('Estimado');
+            for (let i = 0; i < 12; i++) {
+                const overallStatus = monthOverallStatuses[i];
+                const statusStyleToApply = overallStatus === 'REAL' ? styles.realData : styles.estimatedData;
+                resumenSheetData.push([
+                    { v: MONTHS[i], s: styles.textCenter },
+                    { v: formatNumberForExcel(scenario.calculated.totalGastoProyectadoMes?.[i]), t: 'n', s: statusStyleToApply },
+                    { v: formatNumberForExcel(scenario.calculated.fondoReservaMes?.[i]), t: 'n', s: statusStyleToApply },
+                    { v: formatNumberForExcel(scenario.calculated.cuotaSobreGastosMes?.[i]), t: 'n', s: statusStyleToApply },
+                    { v: (scenario.calculated.ipcManual?.[i] || 0) / 100, t: 'n', s: styles.percent },
+                    { v: formatNumberForExcel(scenario.calculated.cuotaIpcMes?.[i]), t: 'n', s: statusStyleToApply },
+                    { v: formatNumberForExcel(scenario.calculated.cuotaRealBaseMes?.[i]), t: 'n', s: statusStyleToApply }
+                ]);
+            }
+             resumenSheetData.push([
+                { v: "TOTAL ANUAL", s: styles.totalRow },
+                { v: formatNumberForExcel(scenario.calculated.annualTotals.gastos?.__TOTAL__), t: 'n', s: styles.totalRow },
+                { v: formatNumberForExcel(scenario.calculated.annualTotals.fondoReserva), t: 'n', s: styles.totalRow },
+                { v: formatNumberForExcel(scenario.calculated.annualTotals.cuotaSobreGastos), t: 'n', s: styles.totalRow },
+                { v: "-", s: {...styles.totalRow, alignment:{horizontal:"center"}} },
+                { v: formatNumberForExcel(scenario.calculated.annualTotals.cuotaIpc), t: 'n', s: styles.totalRow },
+                { v: formatNumberForExcel(scenario.calculated.annualTotals.cuotaRealBase), t: 'n', s: styles.totalRow }
+            ]);
+            const resumenWS = XLSX.utils.aoa_to_sheet(resumenSheetData.map(row => row.map(cellObj => cellObj || {v:""})));
+            resumenWS['!cols'] = [{wch:12},{wch:18},{wch:18},{wch:20},{wch:10},{wch:20},{wch:20}];
+            XLSX.utils.book_append_sheet(wb, resumenWS, "Resumen General");
+
+
+            // --- Hojas de Detalle (Gastos e Ingresos) ---
+            ['gastos', 'ingresos'].forEach(type => {
+                const detailSheetData = [];
+                const headers = type === 'gastos' 
+                    ? ["Rubro", "Detalle", "Coef. Aplicado", ...MONTHS, "Total Anual"]
+                    : ["Rubro", "Detalle", ...MONTHS, "Total Anual"]; 
+                detailSheetData.push(headers.map(h => ({ v: h, s: styles.header })));
+
+                (appState.settings.rubros?.[type] || []).forEach(rubroName => {
+                    if (!scenario.data[type]?.[rubroName]) return;
+                    
+                    const rubroTotalMonthly = scenario.calculated[type === 'gastos' ? 'totalGastoRubroMes' : 'totalIngresoRubroMes']?.[rubroName] || Array(12).fill(0);
+                    const rubroTotalAnnual = scenario.calculated.annualTotals[type]?.[rubroName] || 0;
+                    
+                    const totalRubroRow = [{ v: rubroName, s: {...styles.subTotalRow, alignment:{horizontal:'left'}} }];
+                    totalRubroRow.push({ v: "TOTAL RUBRO", s: {...styles.subTotalRow, alignment:{horizontal:'left'}} }); 
+                    if (type === 'gastos') totalRubroRow.push({ v: "", s: styles.subTotalRow }); 
+                    rubroTotalMonthly.forEach(val => totalRubroRow.push({ v: formatNumberForExcel(val), t:'n', s: styles.subTotalRow }));
+                    totalRubroRow.push({ v: formatNumberForExcel(rubroTotalAnnual), t:'n', s: styles.subTotalRow });
+                    detailSheetData.push(totalRubroRow);
+
+                    const coefName = type === 'gastos' ? (appState.settings.coefficientTypes[appState.settings.rubroConfig[rubroName]?.coefficientType || 'None']?.name || 'N/A') : '';
+                    
+                    (scenario.data[type][rubroName]?.detailOrder || []).forEach(detailName => {
+                        const detailMonthlyValues = scenario.calculated[type === 'gastos' ? 'gastoAjustado' : 'ingresoAjustado']?.[rubroName]?.[detailName] || Array(12).fill(0);
+                        const detailStatuses = scenario.monthStatus?.[type]?.[rubroName]?.[detailName] || Array(12).fill('Estimado');
+                        const detailAnnualTotal = detailMonthlyValues.reduce((sum, val) => sum + (val || 0), 0);
+
+                        const detailRow = [{ v: "", s: styles.textLeft }]; 
+                        detailRow.push({ v: `    ${detailName}`, s: styles.textLeft }); 
+                        if (type === 'gastos') detailRow.push({ v: coefName, s: styles.textLeft });
+
+                        detailMonthlyValues.forEach((val, mIdx) => {
+                            const cellStatus = detailStatuses[mIdx];
+                            detailRow.push({ v: formatNumberForExcel(val), t:'n', s: cellStatus === 'REAL' ? styles.realData : styles.estimatedData });
+                        });
+                        detailRow.push({ v: formatNumberForExcel(detailAnnualTotal), t:'n', s: styles.currency });
+                        detailSheetData.push(detailRow);
+                    });
+                });
+                
+                const totalGeneralMonthly = (type === 'gastos' ? scenario.calculated.totalGastoProyectadoMes : scenario.calculated.totalIngresoProyectadoMes) || Array(12).fill(0);
+                const totalGeneralAnnual = (type === 'gastos' ? scenario.calculated.annualTotals.gastos.__TOTAL__ : scenario.calculated.annualTotals.ingresos.__TOTAL__) || 0;
+                const totalGeneralRow = [{ v: `TOTAL GENERAL ${type.toUpperCase()}`, s: {...styles.totalRow, alignment:{horizontal:'left'}} }];
+                totalGeneralRow.push({v:"", s: styles.totalRow});
+                if (type === 'gastos') totalGeneralRow.push({ v: "", s: styles.totalRow });
+                totalGeneralMonthly.forEach(val => totalGeneralRow.push({ v: formatNumberForExcel(val), t:'n', s: styles.totalRow }));
+                totalGeneralRow.push({ v: formatNumberForExcel(totalGeneralAnnual), t:'n', s: styles.totalRow });
+                detailSheetData.push(totalGeneralRow);
+
+                const detailWS = XLSX.utils.aoa_to_sheet(detailSheetData.map(row => row.map(cellObj => cellObj || {v:""}))); // Asegurar objetos celda
+                const colWidthsConfig = type === 'gastos'
+                    ? [{wch:25},{wch:30},{wch:20}, ...Array(12).fill({wch:15}), {wch:18}]
+                    : [{wch:30},{wch:30}, ...Array(12).fill({wch:15}), {wch:18}]; 
+                if (type === 'ingresos') colWidthsConfig.splice(2,0); // Eliminar visualmente la 3ra columna (Coef. Aplicado) para ingresos
+                detailWS['!cols'] = colWidthsConfig;
+                XLSX.utils.book_append_sheet(wb, detailWS, `Detalle ${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            });
+
+            // --- Hoja: Configuración Detallada ---
+            const cfgSheetData = [];
+            cfgSheetData.push([{v: "Configuración Aplicada al Reporte", s: styles.sectionTitle}, {v:"", s:styles.sectionTitle},{v:"", s:styles.sectionTitle},{v:"", s:styles.sectionTitle}]);
+            cfgSheetData.push([]); 
+
+            cfgSheetData.push([{v: "Parámetros Generales", s: styles.sectionTitle}, {v:"", s:styles.sectionTitle}]);
+            cfgSheetData.push([{v: "Año Ejercicio", s:styles.paramName}, {v: scenario.year, s:styles.textLeft}]);
+            cfgSheetData.push([{v: "Nombre Escenario", s:styles.paramName}, {v: scenario.scenarioName, s:styles.textLeft}]);
+            cfgSheetData.push([{v: "Cantidad UF", s:styles.paramName}, {v: appState.settings.cantidadUnidades, t:'n', s:styles.textRight}]);
+            cfgSheetData.push([]);
+
+            cfgSheetData.push([{v: "Fondo de Reserva", s:styles.sectionTitle}, {v:"", s:styles.sectionTitle}]);
+            cfgSheetData.push([{v: "Tipo", s:styles.paramName}, {v: scenario.reserveFund.type, s:styles.textLeft}]);
+            scenario.reserveFund.values.forEach((val, i) => {
+                cfgSheetData.push([{v: `Fondo Reserva ${MONTHS[i]}`, s:styles.paramName}, {v: scenario.reserveFund.type === 'percent' ? val/100 : val, t:'n', s: (scenario.reserveFund.type === 'percent' ? styles.percent : styles.currency) }]);
+            });
+            cfgSheetData.push([]);
+
+            cfgSheetData.push([{v: "IPC Manual Referencia (%)", s:styles.sectionTitle}, {v:"", s:styles.sectionTitle}]);
+            appState.settings.ipcManual.forEach((val, i) => {
+                cfgSheetData.push([{v: MONTHS[i], s:styles.paramName}, {v: val / 100, t:'n', s:styles.percent }]);
+            });
+            cfgSheetData.push([]);
+
+            cfgSheetData.push([{v: "Tipos de Coeficientes y Valores Mensuales (%)", s: styles.sectionTitle}, {v:"", s:styles.sectionTitle}, {v:"", s:styles.sectionTitle}, {v:"", s:styles.sectionTitle}]);
+            Object.entries(appState.settings.coefficientTypes).forEach(([key, coef]) => {
+                cfgSheetData.push([{v: coef.name + (coef.isDefault ? " (Por Defecto)" : ""), s:styles.paramName, S:{alignment:{wrapText:true}}}]); // Celda para nombre de coef
+                
+                const monthHeaderCells = MONTHS.map(m => ({v:m, s:xlsxCellStyle({bold:true, hAlign:"center"})}));
+                cfgSheetData.push([{v:"Meses:", s: styles.paramName}, ...monthHeaderCells.slice(0,11)]); // Mostrar solo los meses en la fila de cabecera
+
+                const valuesRow = [{v: "Valores (%):", s:styles.paramName}];
+                coef.values.forEach(v => valuesRow.push({v: v / 100, t:'n', s:styles.percent}));
+                cfgSheetData.push(valuesRow);
+                cfgSheetData.push([]); 
+            });
+            
+            cfgSheetData.push([{v: "Asignación de Coeficientes a Rubros de Gasto", s: styles.sectionTitle}, {v:"", s:styles.sectionTitle}]);
+            (appState.settings.rubros?.gastos||[]).forEach(rubroName => {
+                const coefKey = appState.settings.rubroConfig[rubroName]?.coefficientType || 'None';
+                cfgSheetData.push([{v: rubroName, s:styles.paramName}, {v: appState.settings.coefficientTypes[coefKey]?.name || 'N/A', s:styles.textLeft}]);
+            });
+
+            const cfgWS = XLSX.utils.aoa_to_sheet(cfgSheetData);
+            // Definir anchos y merges para la hoja de configuración
+            cfgWS['!cols'] = [{wch:35},{wch:15},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10}]; // Ajustar según necesidad
+            const merges = [];
+            let currentRowIdx = 0;
+            merges.push({s:{r:currentRowIdx,c:0}, e:{r:currentRowIdx,c:3}}); currentRowIdx +=2; // Titulo
+            merges.push({s:{r:currentRowIdx,c:0}, e:{r:currentRowIdx,c:1}}); currentRowIdx += (3 + 1); // Params Generales
+            merges.push({s:{r:currentRowIdx,c:0}, e:{r:currentRowIdx,c:1}}); currentRowIdx += (1 + 12 + 1); // Fondo
+            merges.push({s:{r:currentRowIdx,c:0}, e:{r:currentRowIdx,c:1}}); currentRowIdx += (12 + 1); // IPC
+            merges.push({s:{r:currentRowIdx,c:0}, e:{r:currentRowIdx,c:13}}); currentRowIdx += 1; // Título Coeficientes
+            Object.entries(appState.settings.coefficientTypes).forEach(() => currentRowIdx += 3); // Espacio para cada coef
+            merges.push({s:{r:currentRowIdx,c:0}, e:{r:currentRowIdx,c:1}}); // Asignación
+            cfgWS["!merges"] = merges;
+
+            XLSX.utils.book_append_sheet(wb, cfgWS, "Configuración Detallada");
+
+
+            XLSX.writeFile(wb, `Reporte_Expensas_${scenario.year}_${scenario.scenarioName.replace(/\s+/g,'_')}_Pro.xlsx`);
+            showSnackbar("Reporte Excel con formato profesional generado.", false, 'success');
         }
+
 
         function exportChart(chartId, filename) {
             const instance = window[`${chartId}_instance`];
@@ -1872,10 +2339,71 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
              scenario.data={gastos:{},ingresos:{}}; scenario.monthStatus={gastos:{},ingresos:{}}; scenario.rubroOrder={gastos:[],ingresos:[]};
              saveState(); calculateAll(scenario);
         }
+        
+        function exportLocalStorage() {
+            try {
+                const stateToExport = JSON.parse(JSON.stringify(appState));
+                const dataStr = JSON.stringify(stateToExport, null, 2);
+                const blob = new Blob([dataStr], {type: "application/json"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `expensas_app_backup_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showSnackbar("Datos de la aplicación exportados.", false, 'success');
+            } catch (e) {
+                console.error("Error exportando datos de la aplicación:", e);
+                showSnackbar("Error al exportar datos.", true, 'error');
+            }
+        }
+
+        function importLocalStorage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!confirm("Importar datos reemplazará toda la información actual. ¿Continuar?")) {
+                event.target.value = null; 
+                showSnackbar("Importación cancelada.", false, 'info');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    let newStateCandidate;
+                    if (importedData.hasOwnProperty('currentYear') && importedData.hasOwnProperty('scenarios') && importedData.hasOwnProperty('settings')) {
+                        newStateCandidate = importedData; 
+                    } else {
+                        throw new Error("El archivo JSON no parece ser un backup válido de la aplicación.");
+                    }
+
+                    const defaultAppState = getDefaultAppState();
+                    appState = deepMerge(defaultAppState, newStateCandidate);
+                    
+                    validateAndSetActiveScenario(); 
+                    saveState(); 
+                    updateUI(); 
+                    showSnackbar("Datos importados y aplicados.", false, 'success');
+                } catch (err) {
+                    console.error("Error importando datos:", err);
+                    showSnackbar(`Error al importar: ${err.message}`, true, 'error', 6000);
+                } finally {
+                     event.target.value = null; 
+                }
+            };
+            reader.readAsText(file);
+        }
+
 
         // --- Inicialización de EventListeners ---
         function addEventListeners() {
              document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+             document.getElementById('export-storage')?.addEventListener('click', exportLocalStorage);
+             document.getElementById('import-storage')?.addEventListener('click', () => document.getElementById('import-storage-input').click());
+             document.getElementById('import-storage-input')?.addEventListener('change', importLocalStorage);
+
              document.getElementById('scenario-selector')?.addEventListener('change', (event) => {
                  const newKey = event.target.value; const newScenario = appState.scenarios?.[newKey];
                  if(newKey&&newScenario){appState.activeScenarioKey=newKey;appState.currentYear=newScenario.year||parseInt(newKey.split('_')[0])||new Date().getFullYear();initializeScenarioDataForRubros(newScenario);calculateAll(newScenario);}
@@ -1894,19 +2422,18 @@ if (window.Chart && !Chart.registry.plugins.get('doughnutShadow3D')) {
 
         // --- Punto de Entrada Principal del Script ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadState(); // Carga el estado guardado o el por defecto
-            initTheme(); // Configura el tema visual
-            validateAndSetActiveScenario(); // Valida o establece un escenario activo
+            loadState(); 
+            initTheme(); 
+            validateAndSetActiveScenario(); 
 
-            // Actualiza elementos informativos fijos
             const cuotaInfoSpan1 = document.getElementById('cuota-rubro-name-info');
             if (cuotaInfoSpan1) cuotaInfoSpan1.textContent = CUOTA_RUBRO_NAME;
             const cuotaInfoSpan2 = document.getElementById('cuota-rubro-name-info2');
             if (cuotaInfoSpan2) cuotaInfoSpan2.textContent = CUOTA_RUBRO_NAME;
 
-            initUI(); // Inicializa la UI con los datos actuales
-            addEventListeners(); // Añade los listeners de eventos
-            updateUI(); // Primera actualización completa de la UI
+            initUI(); 
+            addEventListeners(); 
+            updateUI(); 
             console.log(`App ${STORAGE_KEY} Inicializada Completamente.`);
         });
 
