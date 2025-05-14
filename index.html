@@ -4496,5 +4496,97 @@ function updateOperatingResult(scenarioData){
         });
 
     </script>
+
+<!-- ======== SCRIPT MANUAL REAL / ESTIMADO v3 (CHATGPT) ======== -->
+<script>
+(function(){
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.addEventListener('dblclick', function(ev){
+      const target = ev.target;
+      /* Inputs dentro de Cash‑Flow u otros formularios */
+      if (target.tagName === 'INPUT' && (target.classList?.contains('real-month-cell') || target.classList?.contains('estimated-month-cell'))) {
+          toggleStatusOnInput(target);
+          return;
+      }
+
+      /* Celdas de tablas */
+      const td = target.closest('td');
+      if(!td) return;
+
+      const summaryTbl = td.closest('#dashboard-summary');
+      const hasStatusClass = td.classList.contains('real-month-cell') || td.classList.contains('estimated-month-cell');
+
+      if (summaryTbl || hasStatusClass) {
+          toggleStatusOnCell(td, !!summaryTbl);
+      }
+    });
+
+    /* ----- Helpers ----- */
+    function toggleStatusOnInput(inp){
+        const wasReal = inp.classList.contains('real-month-cell');
+        const newIsReal = !wasReal;
+        inp.classList.toggle('real-month-cell', newIsReal);
+        inp.classList.toggle('estimated-month-cell', !newIsReal);
+        const newStatus = newIsReal ? 'REAL' : 'Estimado';
+
+        const mIdx = parseInt(inp.dataset.month);
+        const cfType = inp.dataset.cftype;
+        const cfRubro = inp.dataset.cfrubro;
+        if (!isNaN(mIdx) && cfType && cfRubro && window.getCurrentScenarioData){
+            const scenario = window.getCurrentScenarioData();
+            if(scenario){
+                scenario.cashFlow = scenario.cashFlow || {};
+                scenario.cashFlow.monthStatusCF = scenario.cashFlow.monthStatusCF || {};
+                const branch = scenario.cashFlow.monthStatusCF;
+                branch[cfType] = branch[cfType] || {};
+                branch[cfType][cfRubro] = branch[cfType][cfRubro] || {};
+                const arr = branch[cfType][cfRubro]['Valor'] = branch[cfType][cfRubro]['Valor'] || Array(12).fill('Estimado');
+                arr[mIdx] = newStatus;
+            }
+        }
+        if (typeof window.saveState === 'function') window.saveState();
+        if (typeof window.calculateAll === 'function') window.calculateAll(window.getCurrentScenarioData());
+    }
+
+    function toggleStatusOnCell(cell, isSummary){
+        const wasReal = cell.classList.contains('real-month-cell');
+        const newIsReal = !wasReal;
+        const newStatusCls = newIsReal ? 'real-month-cell' : 'estimated-month-cell';
+        cell.classList.remove('real-month-cell', 'estimated-month-cell');
+        cell.classList.add(newStatusCls);
+
+        /* Persistir sólo si no es Summary (porque summary se reconstruye) */
+        if (isSummary) return;
+
+        const row = cell.closest('tr');
+        if(!row) return;
+
+        const type = row.dataset.type; // 'gastos' | 'ingresos'
+        const rubro = row.dataset.rubro;
+        const detail = row.dataset.detail || row.cells[0]?.textContent?.trim();
+        if(!type || !rubro || !detail) return;
+
+        /* Calcular índice de mes ajustando columnas fijas */
+        const monthIdx = cell.cellIndex - (type === 'gastos' ? 2 : 1);
+        if(monthIdx < 0 || monthIdx > 11) return;
+
+        if(window.getCurrentScenarioData){
+            const scenario = window.getCurrentScenarioData();
+            if(scenario){
+                scenario.monthStatus = scenario.monthStatus || {gastos:{}, ingresos:{}};
+                scenario.monthStatus[type] = scenario.monthStatus[type] || {};
+                scenario.monthStatus[type][rubro] = scenario.monthStatus[type][rubro] || {};
+                scenario.monthStatus[type][rubro][detail] = scenario.monthStatus[type][rubro][detail] || Array(12).fill('Estimado');
+                scenario.monthStatus[type][rubro][detail][monthIdx] = newIsReal ? 'REAL' : 'Estimado';
+                if (typeof window.saveState === 'function') window.saveState();
+                if (typeof window.calculateAll === 'function') window.calculateAll(scenario);
+            }
+        }
+    }
+  });
+})();
+</script>
+<!-- ======== FIN SCRIPT MANUAL REAL / ESTIMADO v3 ======== -->
+
 </body>
 </html>
